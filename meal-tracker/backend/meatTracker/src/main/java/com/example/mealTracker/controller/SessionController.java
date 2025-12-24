@@ -35,10 +35,10 @@ public class SessionController {
       }
 
     //세션 상태 업데이트 (기록 재개)
-      @PostMapping("/pause")
+      @PostMapping("/resume")
        public ResponseEntity<Object> pauseSession() {
           Long sessionId = mealService.getSessionId();
-          sessionService.updateSessionStatus(sessionId, MealSessionStatus.PAUSED);
+          sessionService.updateSessionStatus(sessionId, MealSessionStatus.ACTIVE);
           return ResponseEntity.ok().build();
       }
 

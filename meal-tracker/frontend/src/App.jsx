@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 function App() {
   const [input, setInput] = useState('')
   const [logs, setLogs] = useState([])
+  const [logsLoaded, setLogsLoaded] = useState(false);
   const [summary, setSummary] = useState(null)
   const [items, setItems] = useState([])
   const [session, setSession] = useState(null)
@@ -22,8 +23,16 @@ function App() {
 
   useEffect(() => {
     // 화면 첫 진입시 실행
+    const saved = localStorage.getItem("logs");
+    if (saved) setLogs(JSON.parse(saved));
+    setLogsLoaded(true);
     loadDashBoard();
   }, []);
+
+   useEffect(() => {
+     if (!logsLoaded) return;
+    localStorage.setItem("logs", JSON.stringify(logs));
+  }, [logs, logsLoaded]);
 
     const sendPreset = async (presetText) => {
     const text = presetText.trim();
@@ -48,7 +57,7 @@ function App() {
 
   const data = await res.json();
 
-  setLogs((prev) => [...prev, { role: "assistant", text: data.assistantText }]);
+  setLogs((prev) => [...prev, { role: "assistant", text: data.assistantText }]);  
   setSummary(data.todaySummary);
   setItems(data.items ?? []);
 };
@@ -66,7 +75,7 @@ const startSession = async () => {
 };
 
 const pauseSession = async () => {
-  await fetch("/api/meal/session/pause", { method: "POST" });
+  await fetch("/api/meal/session/end", { method: "POST" });
   reloadSession();
 };
 
@@ -76,7 +85,9 @@ const resumeSession = async () => {
 };
 
 const reloadSession = async () => {
-  const res = await fetch("/api/meal/session/today");
+  const res = await fetch("/api/meal/today", {
+    method: "POST"
+  });
   const data = await res.json();
   setSession(data.session);
 };

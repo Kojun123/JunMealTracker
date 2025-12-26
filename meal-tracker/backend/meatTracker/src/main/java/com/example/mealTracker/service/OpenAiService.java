@@ -48,7 +48,7 @@ public class OpenAiService {
                                     "type", "string",
                                     "enum", List.of("LOG_FOOD", "MANUAL_RESET", "END_SUMMARY", "UNKNOWN")
                             ),
-                            "assistantText", Map.of("type", "string"),
+                            "assistantText", Map.of("type", "string","minLength", 1),
                             "items", Map.of(
                                     "type", "array",
                                     "items", Map.of(
@@ -57,11 +57,16 @@ public class OpenAiService {
                                             "properties", Map.of(
                                                     "name", Map.of("type", "string"),
                                                     "count", Map.of("type", "integer", "minimum", 1),
-                                                    "calories", Map.of("type", "number", "minimum", 0),
-                                                    "protein", Map.of("type", "number", "minimum", 0),
-                                                    "assumption", Map.of("type", "string")
+                                                    // 선택: 사용자가 말한 양 표현을 남김
+                                                    "note", Map.of("type", "string"),
+                                                    // 필수: 모델 해석 근거/모호점
+                                                    "assumption", Map.of("type", "string"),
+                                                    "candidates", Map.of("type", "array",
+                                                            "items", Map.of("type", "string"),
+                                                            "maxItems", 5
+                                                    )
                                             ),
-                                            "required", List.of("name", "count","calories", "protein", "assumption")
+                                            "required", List.of("name", "count", "note", "assumption", "candidates")
                                     )
                             )
                     ),
@@ -79,17 +84,15 @@ public class OpenAiService {
                     "model", "gpt-4o-mini",
                     "input", List.of(
                             Map.of("role", "system", "content",
-                                    "너는 식단 기록 파서다. 반드시 JSON만 반환한다.\n" +
-                                            "목표는 '대략적인 평균 영양 추정'이다. 셀릭스 한개 라고 사용자가 입력시 인터넷에서 셀릭스의 맛마다 다르겠지만 대략적인 영양성분을 파악한뒤 대답한다. 이 추정치는 매번 변경되면 안되고 최대한 고정되어야 한다.(사용자가 셀릭스 입력할 때 마다 값이 바뀌면 곤란하다는 뜻)\n" +
-                                            "\n" +
-                                            "규칙:\n" +
-                                            "- 음식별로 일반적인 1인분/1개 기준을 가정해서 calories/protein을 추정한다.\n" +
-                                            "- 사용자가 수량을 말하면 count를 반영해서 calories/protein은 '총합'으로 반환한다.\n" +
-                                            "- 수량이 없으면 count=1.\n" +
-                                            "- 모호하면 items는 비워도 되고 intent=UNKNOWN으로 하고 assistantText에서 질문해라.\n" +
-                                            "- assistantText에는 추정 기준을 짧게 포함해라. 예: \"닭가슴살 1개 대략 150g, 단백질 20g 추정.\"\n" +
-                                            "assumption에는 값이 없으면 빈 문자열이라도 넣어야 해" +
-                                            "calories/protein은 반드시 숫자여야 하고 count는 integer 값이야"
+                                    "너는 음식 입력을 구조화해서 파싱만 한다.\n" +
+                                            "절대 칼로리 단백질 같은 영양 수치를 추정하거나 계산하지 마라.\n" +
+                                            "items에는 음식명(name)과 개수(count) 있으면 넣어라.\n" +
+                                            "모호하면 assumption에 왜 모호한지 짧게 써라." +
+                                            "note가 없으면 빈 문자열(\"\")을 반드시 포함하라\n" +
+                                            "items.candidates에는 name과 의미가 같은/비슷한 표기 후보를 1~5개 넣어라.\n" +
+                                            "예: \"셀렉스\" -> [\"셀릭스\",\"셀렉스\"]\n" +
+                                            "brand/별칭/줄임말도 포함하되, 영양 수치는 절대 추정하지 마라.\n" +
+                                            "candidates가 없으면 빈 배열 [] 을 넣어라"
                             ),
                             Map.of("role", "user", "content", userText)
                     ),
@@ -117,6 +120,7 @@ public class OpenAiService {
                     .set("items", objectMapper.createArrayNode());
         }
     }
+
 
 
     private String extractOutputText(JsonNode resp) {

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -103,9 +104,11 @@ public class MealService {
 
             int total = 0;
             double addPro = 0;
+            double addCal = 0;
             int dbHits = 0;
             int estimates = 0;
-
+            String [] text = new String[itemsNode.size()];
+            int i = 0;
             for (JsonNode it : itemsNode) {
 
                 String rawName = it.path("name").asText();
@@ -138,12 +141,13 @@ public class MealService {
                 InsertItem(normalized, count, calories, protein, sessionId);
 
                 total++;
+                addCal += calories;
                 addPro += protein;
+                text[i++] = rawName + " x" + count + " 단백질 : " + protein + " 칼로리 : " + calories + " \n";
             }
 
-            String assistantText =
-                    total + "개 기록함. DB " + dbHits + "개, 추정 " + estimates + "개. " +
-                            "이번 +" + Math.round(addPro) + "g";
+            String assistantText = Arrays.toString(text) + "\n 총 단백질 : " + addPro + " 총 칼로리 : " + addCal ;
+
 
             return buildResponse(assistantText, sessionId);
         }

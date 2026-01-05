@@ -47,9 +47,9 @@ public class MealService {
     }
 
 
-    public MealMessageResponse handle(MealMessageRequest req, Long sessionId) {
+    public MealMessageResponse handle(MealMessageRequest vo, Long sessionId) {
 
-        String msg = req.message() == null ? "" : req.message().trim();
+        String msg = vo.message() == null ? "" : vo.message().trim();
         if (msg.isBlank()) {
             return buildResponse("빈 입력값입니다.", sessionId);
         }
@@ -325,6 +325,23 @@ public class MealService {
         if (topNames.isEmpty()) return List.of();
 
         return foodMasterMapper.findByNames(topNames);
+    }
+
+    public MealMessageResponse manualInsert(ManualRequest vo) {
+        double protein = vo.getProtein() * vo.getCount();
+        double calories =  vo.getKcal() * vo.getCount();
+        String rawName = vo.getRawName();
+        Long sessionId = vo.getSessionId();
+        int count = vo.getCount();
+
+        InsertItem(rawName, count, calories, protein, sessionId);
+
+        String assistantText =
+                rawName + " x" + count + " 단백질 : " + protein + " 칼로리 : " + calories
+                    + "\n총 단백질 : " + protein
+                    + " 총 칼로리 : " + calories;
+
+            return buildResponse(assistantText, sessionId);
     }
 
 

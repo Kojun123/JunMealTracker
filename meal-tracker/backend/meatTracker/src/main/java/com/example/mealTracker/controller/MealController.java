@@ -28,9 +28,9 @@ public class MealController {
     }
 
     @PostMapping("/message")
-    public ResponseEntity<MealMessageResponse> message(@RequestBody MealMessageRequest req) {
+    public ResponseEntity<MealMessageResponse> message(@RequestBody MealMessageRequest vo) {
         Long sessionId = mealService.getSessionId();
-        return ResponseEntity.ok(mealService.handle(req, sessionId));
+        return ResponseEntity.ok(mealService.handle(vo, sessionId));
     }
 
     @PostMapping("/today")
@@ -38,5 +38,10 @@ public class MealController {
         Long sessionId = mealService.getSessionId();
 
         return ResponseEntity.ok(mealService.getToday(sessionId));
+    }
+
+    @PostMapping("/manual")
+    public ResponseEntity<MealMessageResponse> manual(@RequestBody ManualRequest vo) {
+        return ResponseEntity.ok(mealService.manualInsert(vo));
     }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import ManualModal from "./components/ManualModal";
 
 function App() {
   const [input, setInput] = useState("");
@@ -9,6 +10,10 @@ function App() {
   const [items, setItems] = useState([]);
   const [session, setSession] = useState(null);
   const [needConfirm, setNeedConfirm] = useState(null);
+
+  //직접 기록
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manual, setManual] = useState({rawName:"", count:1, protein:"", kcal:""});
 
   const loadDashBoard = async () => {
     const res = await fetch("/api/meal/today", {
@@ -32,12 +37,6 @@ function App() {
     if (!logsLoaded) return;
     localStorage.setItem("logs", JSON.stringify(logs));
   }, [logs, logsLoaded]);
-
-  const sendPreset = async (presetText) => {
-    const text = presetText.trim();
-    if (!text) return;
-    await sendText(text);
-  };
 
   const sendText = async (text) => {
     const trimmed = (text ?? "").trim();
@@ -117,14 +116,50 @@ function App() {
     await sendText(`${name} ${count}개`);
   };
 
-  const handleEstimate = async (rawName, count) => {
-    setNeedConfirm(null);
-    // 그냥 원래 입력으로 다시 보내면 서버가 "추천 없음" 케이스에서 estimator로 처리하게 됨
-    await sendText(`${rawName} ${count}개`);
+  const openManual = (rawName, count) => {
+    setManual({rawName, count, protein:"", kcal:""});
+    setManualOpen(true);
   };
 
-  return (
+  const submitManual = async() => {
+    const protein = Number(manual.protein);
+    const kcal = Number(manual.kcal);
+
+    if(!Number.isFinite(protein) || protein < 0) return;
+    if(!Number.isFinite(kcal) || kcal < 0) return;
+
+    setNeedConfirm(null);
+    setManualOpen(false);
+
+    await fetch("/api/meal/manual", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        sessionId: session?.id,
+        rawName: manual.rawName,
+        count: manual.count,
+        protein,
+        kcal
+      })
+    }).then(r=>r.json()).then(handleServerResponse);    
+  };
+
+  function handleServerResponse(res) {
+    setLogs((prev) => [...prev, { role: "assistant", text: res.assistantText }]);
+    setSummary(res.todaySummary);
+    setItems(res.items ?? []);
+  }
+
+  return (    
     <div style={{ padding: 40, maxWidth: 600 }}>
+            <ManualModal
+              open={manualOpen}
+              manual={manual}
+              setManual={setManual}
+              onClose={() => setManualOpen(false)}
+              onSubmit={submitManual}
+            />
+
       <h1>Meal Tracker</h1>
 
       <div
@@ -254,7 +289,7 @@ function App() {
                     {s.name} ({Math.round(s.protein)}g)
                   </button>
                 ))}
-                <button onClick={() => handleEstimate(needConfirm.rawName, needConfirm.count)}>
+                <button onClick={() => openManual(needConfirm.rawName, needConfirm.count)}>
                   그냥 추정으로 기록
                 </button>
               </div>
@@ -262,7 +297,7 @@ function App() {
           ) : (
             <>
               <div style={{ marginBottom: 10 }}>추천 후보가 없어요</div>
-              <button onClick={() => handleEstimate(needConfirm.rawName, needConfirm.count)}>
+              <button onClick={() => openManual(needConfirm.rawName, needConfirm.count)}>
                 그냥 추정으로 기록
               </button>
             </>
@@ -295,7 +330,12 @@ function App() {
         ))}
       </div>
     </div>
+
+   
+
+
   );
 }
+
 
 export default App;

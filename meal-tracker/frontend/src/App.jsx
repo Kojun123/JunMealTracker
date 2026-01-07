@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import ManualModal from "./components/ManualModal";
+import { useNavigate } from "react-router-dom";
+
 
 function App() {
   const [input, setInput] = useState("");
@@ -11,17 +13,22 @@ function App() {
   const [session, setSession] = useState(null);
   const [needConfirm, setNeedConfirm] = useState(null);
 
+  const navigate = useNavigate();
+
+
   //직접 기록
   const [manualOpen, setManualOpen] = useState(false);
   const [manual, setManual] = useState({rawName:"", count:1, protein:"", kcal:""});
 
   const loadDashBoard = async () => {
-    const res = await fetch("/api/meal/today", {credentials:"include"}, {
+    const res = await fetch("/api/meal/today", {
+      credentials: "include",
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
 
     if(res.status === 401) {
+      navigate("/login");
       return;
     }
 
@@ -32,6 +39,13 @@ function App() {
   };
 
   useEffect(() => {
+    fetch("/auth/me", {credentials: "include"})
+    .then((res) => {
+      if(res.status === 401) {
+        navigate("/login");
+      }
+    });
+
     const saved = localStorage.getItem("logs");
     if (saved) setLogs(JSON.parse(saved));
     setLogsLoaded(true);
@@ -41,7 +55,7 @@ function App() {
   useEffect(() => {
     if (!logsLoaded) return;
     localStorage.setItem("logs", JSON.stringify(logs));
-  }, [logs, logsLoaded]);
+  }, [logs, logsLoaded]); 
 
   const sendText = async (text) => {
     const trimmed = (text ?? "").trim();

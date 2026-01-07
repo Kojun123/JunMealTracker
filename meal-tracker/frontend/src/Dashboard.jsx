@@ -187,7 +187,7 @@ useEffect(() => {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Meal Tracker</h1>
-          <p className="mt-1 text-sm text-gray-500">먹은 거 대충 던지면 기록해주는 착한 척 하는 앱</p>
+          <p className="mt-1 text-sm text-gray-500">먹은 거 대충 던지면 기록해주는 앱</p>
         </div>
 
         {/* 나중에 /auth/me에서 email 받아오면 넣기 */}
@@ -313,7 +313,7 @@ useEffect(() => {
 
         {items.length === 0 ? (
           <div className="px-5 pb-6 text-sm text-gray-600">
-            아직 기록이 없네. 대충 “계란 2개”부터 던져봐.
+            아직 기록이 없어요
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -348,13 +348,13 @@ useEffect(() => {
         {needConfirm && (
           <div className="border-t border-amber-100 bg-amber-50 px-5 py-4">
             <div className="text-sm font-semibold text-amber-900">
-              ‘{needConfirm.rawName}’는 등록된 음식이 아니야
+              ‘{needConfirm.rawName}’는 등록된 음식이 아닙니다
             </div>
 
             <div className="mt-2 text-sm text-amber-900/80">
               {Array.isArray(needConfirm.suggestions) && needConfirm.suggestions.length > 0
-                ? "혹시 이거였냐?"
-                : "추천 후보가 없네."}
+                ? "혹시 이거였나요?"
+                : "추천 후보가 없어요."}
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -373,7 +373,7 @@ useEffect(() => {
                 onClick={() => openManual(needConfirm.rawName, needConfirm.count)}
                 className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
               >
-                그냥 추정으로 기록
+                그냥 추정으로 기록하기
               </button>
             </div>
           </div>
@@ -388,7 +388,7 @@ useEffect(() => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") send();
               }}
-              placeholder="예: 오늘 식단 시작  /  계란 2개  /  닭가슴살 1개"
+              placeholder="ex) 계란 2개  /  닭가슴살 1개"
               className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-gray-400"
             />
             <button

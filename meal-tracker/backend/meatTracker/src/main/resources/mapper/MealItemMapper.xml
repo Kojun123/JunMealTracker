@@ -5,13 +5,13 @@
 <mapper namespace="com.example.mealTracker.mapper.MealItemMapper">
 
     <insert id="insertItem" parameterType="com.example.mealTracker.domain.MealItem" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO meal_item (session_id, name, count, calories, protein, assumption)
-        VALUES (#{sessionId}, #{name}, #{count}, #{calories}, #{protein}, #{assumption})
+        INSERT INTO meal_item (user_id, name, count, calories, protein, assumption)
+        VALUES (#{userId}, #{name}, #{count}, #{calories}, #{protein}, #{assumption})
     </insert>
 
-    <select id="findItemsBySessionId" resultType="com.example.mealTracker.domain.MealItem">
+    <select id="findItemsByUser" resultType="com.example.mealTracker.domain.MealItem">
         SELECT id,
-            session_id as sessionId,
+            user_id as userId,
             name,
             `count` as count,
             calories,
@@ -19,20 +19,20 @@
             assumption,
             created_at as createdAt
         FROM meal_item
-        WHERE session_id = #{sessionId}
+        WHERE user_id = #{userId}
         ORDER BY id ASC
     </select>
 
-    <select id="findSummaryBySessionId" resultType="com.example.mealTracker.domain.TodaySummary">
+    <select id="findSummaryByUser" resultType="com.example.mealTracker.domain.TodaySummary">
         SELECT
         COALESCE(SUM(calories), 0) AS total_calories,
         COALESCE(SUM(protein), 0)  AS total_protein
         FROM meal_item
-        WHERE session_id = #{sessionId}
+        WHERE user_id = #{userId}
     </select>
 
     <delete id="deleteItemsBySessionId">
-        DELETE FROM meal_item WHERE session_id = #{sessionId}
+        DELETE FROM meal_item WHERE user_id = #{userId}
     </delete>
 
 </mapper>

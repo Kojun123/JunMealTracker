@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MealItem {
     private Long id;
-    private Long sessionId;
+    private String userId;
     private String name;
     private Integer count;
     private Double calories;
@@ -18,11 +18,11 @@ public class MealItem {
     private LocalDateTime createdAt;
 
 
-    public MealItem(String name, int count, double calories, double protein, Long sessionId) {
+    public MealItem(String name, int count, double calories, double protein, String userId) {
         this.name = name;
         this.count = count;
         this.calories = calories;
         this.protein = protein;
-        this.sessionId = sessionId;
+        this.userId = userId;
     }
 }

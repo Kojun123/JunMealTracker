@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ManualRequest {
 
-    Long sessionId;
+    String userId;
     String rawName;
     int count;
     double protein;

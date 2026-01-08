@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface MealItemMapper {
     int insertItem(MealItem item);
-    List<MealItem> findItemsBySessionId(@Param("sessionId") Long sessionId);
-    TodaySummary findSummaryBySessionId(@Param("sessionId") Long sessionId);
-    int deleteItemsBySessionId(@Param("sessionId") Long sessionId);
+    List<MealItem> findItemsByUser(@Param("userId") String userId);
+    TodaySummary findSummaryByUser(@Param("userId") String userId);
+    int deleteItemsBySessionId(@Param("uesrId") String userId);
 }

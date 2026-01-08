@@ -1,15 +1,18 @@
 package com.example.mealTracker.controller;
 
 
-import com.example.mealTracker.domain.MealItem;
-import com.example.mealTracker.domain.MealSession;
-import com.example.mealTracker.domain.TodaySummary;
-import com.example.mealTracker.dto.*;
+import com.example.mealTracker.dto.ManualRequest;
+import com.example.mealTracker.dto.MealMessageRequest;
+import com.example.mealTracker.dto.MealMessageResponse;
+import com.example.mealTracker.dto.TodayResponse;
 import com.example.mealTracker.service.MealService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/meal")
@@ -21,23 +24,16 @@ public class MealController {
         this.mealService = mealService;
     }
 
-    @PostMapping("/getSummary")
-    public ResponseEntity<MealMessageResponse> getSummary() {
-        Long sessionId = mealService.getSessionId();
-        return ResponseEntity.ok(mealService.buildResponse("", sessionId));
-    }
-
     @PostMapping("/message")
-    public ResponseEntity<MealMessageResponse> message(@RequestBody MealMessageRequest vo) {
-        Long sessionId = mealService.getSessionId();
-        return ResponseEntity.ok(mealService.handle(vo, sessionId));
+    public ResponseEntity<MealMessageResponse> message(@RequestBody MealMessageRequest vo, @AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        return ResponseEntity.ok(mealService.handle(vo, userId));
     }
 
     @PostMapping("/today")
-    public ResponseEntity<TodayResponse> today() {
-        Long sessionId = mealService.getSessionId();
-
-        return ResponseEntity.ok(mealService.getToday(sessionId));
+    public ResponseEntity<TodayResponse> today(@AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        return ResponseEntity.ok(mealService.getToday(userId));
     }
 
     @PostMapping("/manual")

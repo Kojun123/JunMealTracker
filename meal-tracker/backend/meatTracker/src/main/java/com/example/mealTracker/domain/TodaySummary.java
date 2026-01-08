@@ -6,14 +6,14 @@ import lombok.Data;
 public class TodaySummary {
     private double totalCalories;
     private double totalProtein;
-    private double goalCalories;
-    private double goalProtein;
+    private double targetCalories;
+    private double targetProtein;
 
 
-    public TodaySummary(double totalCalories, double totalProtein, double goalCalories, double goalProtein) {
+    public TodaySummary(double totalCalories, double totalProtein, double targetCalories, double targetProtein) {
         this.totalCalories = totalCalories;
         this.totalProtein = totalProtein;
-        this.goalCalories = goalCalories;
-        this.goalProtein = goalProtein;
+        this.targetCalories = targetCalories;
+        this.targetProtein = targetProtein;
     }
 }

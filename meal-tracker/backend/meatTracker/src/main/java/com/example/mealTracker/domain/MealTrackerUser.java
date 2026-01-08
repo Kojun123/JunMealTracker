@@ -11,5 +11,7 @@ public class MealTrackerUser {
     private Long id;
     private String email;
     private String password;
+    private int targetCalories; // target_calories
+    private int targetProtein; // target_protein
     private LocalDateTime createdAt;
 }

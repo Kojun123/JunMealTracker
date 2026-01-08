@@ -2,7 +2,6 @@ package com.example.mealTracker.service;
 
 import com.example.mealTracker.domain.FoodMaster;
 import com.example.mealTracker.domain.MealItem;
-import com.example.mealTracker.domain.MealSession;
 import com.example.mealTracker.domain.TodaySummary;
 import com.example.mealTracker.dto.ManualRequest;
 import com.example.mealTracker.dto.MealMessageRequest;
@@ -22,9 +21,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MealService {
-
-    private static final double GOAL_CAL = 2500;
-    private static final double GOAL_PRO = 150;
 
     private final OpenAiService openAiService;
     private final MealItemMapper mealItemMapper;
@@ -164,24 +160,26 @@ public class MealService {
     public TodaySummary calcSummary(String userId) {
         double totalCal = 0;
         double totalPro = 0;
+        int targetCal=0, targetPro=0;
+
 
         for (MealItem it : mealItemMapper.findItemsByUser(userId)) {
             totalCal += it.getCalories();
             totalPro += it.getProtein();
         }
 
-        return new TodaySummary(totalCal, totalPro, GOAL_CAL, GOAL_PRO);
+        return new TodaySummary(totalCal, totalPro, targetCal, targetPro);
     }
 
     //남은 단백질/칼로리 제공
     private String remainText(TodaySummary s) {
-        double remainPro = Math.max(0, s.getGoalProtein() - s.getTotalProtein());
-        double remainCal = Math.max(0, s.getGoalCalories() - s.getTotalCalories());
+        double remainPro = Math.max(0, s.getTargetProtein() - s.getTotalProtein());
+        double remainCal = Math.max(0, s.getTargetCalories() - s.getTotalCalories());
 
         return "\n" +
-                "남은 단백질 " + Math.round(remainPro) + "/" + Math.round(s.getGoalProtein())
+                "남은 단백질 " + Math.round(remainPro) + "/" + Math.round(s.getTargetProtein())
                 + "\n" +
-                "남은 칼로리 " + Math.round(remainCal) + "/" + Math.round(s.getGoalCalories());
+                "남은 칼로리 " + Math.round(remainCal) + "/" + Math.round(s.getTargetCalories());
     }
 
     public TodayResponse getToday(String userId) {

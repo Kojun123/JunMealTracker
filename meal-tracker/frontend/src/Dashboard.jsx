@@ -12,6 +12,7 @@ function Dashboard() {
   const [items, setItems] = useState([]);
   const [session, setSession] = useState(null);
   const [needConfirm, setNeedConfirm] = useState(null);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
@@ -24,7 +25,7 @@ function Dashboard() {
     const res = await fetch("/api/meal/today", {
       credentials: "include",
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
 
     if(res.status === 401) {
@@ -40,11 +41,20 @@ function Dashboard() {
 
 useEffect(() => {
   (async () => {
-    const me = await fetch("/auth/me", { credentials: "include" });
-    if (me.status === 401) {
+    const user = await fetch("/auth/me", {
+        credentials: "include",
+        method: "POST",
+        headers: { "Content-Type" : "application/json" }
+    });
+
+    if (user.status === 401) {
       navigate("/login");
       return;
     }
+    
+    const data = await user.json();
+    setUser(data);
+    console.log("user", data);
 
     const saved = localStorage.getItem("logs");
     if (saved) setLogs(JSON.parse(saved));
@@ -171,7 +181,7 @@ useEffect(() => {
           <p className="mt-1 text-sm text-gray-500">먹은 거 대충 던지면 기록해주는 앱</p>
         </div>
 
-        {/* 나중에 /auth/me에서 email 받아오면 넣기 */}
+        {user.email} 님
         <div className="flex items-center gap-3">
           <button
             onClick={async () => {
@@ -190,7 +200,7 @@ useEffect(() => {
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="text-sm text-gray-500">칼로리</div>
           <div className="mt-1 text-3xl font-semibold text-gray-900">
-            {summary ? Math.round(summary.totalCalories) : 0}
+            {summary ? Math.round(summary.totalCalories) : 0} / {user ? Math.round(user.targetCalories) : 0}
             <span className="ml-2 text-base font-medium text-gray-500">kcal</span>
           </div>
         </div>
@@ -198,7 +208,7 @@ useEffect(() => {
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="text-sm text-gray-500">단백질</div>
           <div className="mt-1 text-3xl font-semibold text-gray-900">
-            {summary ? Math.round(summary.totalProtein) : 0}
+            {summary ? Math.round(summary.totalProtein) : 0} / {user ? Math.round(user.targetProtein) : 0}
             <span className="ml-2 text-base font-medium text-gray-500">g</span>
           </div>
         </div>

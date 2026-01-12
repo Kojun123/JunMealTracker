@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +27,12 @@ public class MealService {
     private final OpenAiService openAiService;
     private final MealItemMapper mealItemMapper;
     private final FoodMasterMapper foodMasterMapper;
-    private final FoodEstimator estimator;
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public List<MealItem> findItemsBySessionId(String userId) {
-        return mealItemMapper.findItemsByUser(userId);
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        return mealItemMapper.findItemsByUser(userId, now);
     }
 
 
@@ -143,16 +145,18 @@ public class MealService {
 
     // 먹은 것 기록.
     private void InsertItem(String name, int addCount, double addCal, double addPro, String userId) {
-       MealItem item = new MealItem(name, addCount, addCal, addPro, userId);
+       MealItem item = new MealItem(name, addCount, addCal, addPro, userId, LocalDate.now(ZoneId.of("Asia/Seoul")));
        mealItemMapper.insertItem(item);
     }
 
     public MealMessageResponse buildResponse(String assistantText, String userId) {
         TodaySummary summary = calcSummary(userId);
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
+
         return MealMessageResponse.normal(
                 assistantText + "\n" + remainText(summary),
                 summary,
-                List.copyOf(mealItemMapper.findItemsByUser(userId))
+                List.copyOf(mealItemMapper.findItemsByUser(userId, now))
         );
     }
 
@@ -161,9 +165,9 @@ public class MealService {
         double totalCal = 0;
         double totalPro = 0;
         int targetCal=0, targetPro=0;
+        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
-
-        for (MealItem it : mealItemMapper.findItemsByUser(userId)) {
+        for (MealItem it : mealItemMapper.findItemsByUser(userId, now)) {
             totalCal += it.getCalories();
             totalPro += it.getProtein();
         }

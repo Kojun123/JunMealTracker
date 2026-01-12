@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs"; //날짜 포맷
 import ManualModal from "./components/ManualModal";
 import GoalSettingModal from "./components/GoalSettingModal";
 import DashboardHeader from "./components/DashboardHeader";
 import StatsCards from "./components/StatsCards";
 import Composer from "./components/Composer";
-import { useNavigate } from "react-router-dom";
 
 
 function Dashboard() {
@@ -32,8 +32,14 @@ const [goalOpen, setGoalOpen] = useState(false);
 const [targetCalories, setTargetCalories] = useState(2000);
 const [targetProtein, setTargetProtein] = useState(150);
 
+const [toast, setToast] = useState(null);
 
-  const loadDashBoard = async () => {
+const showToast = (type, message) => {
+    setToast({type, message});
+    setTimeout(() => setToast(null), 2500)
+}
+
+const loadDashBoard = async () => {
     const res = await fetch("/api/meal/today", {
       credentials: "include",
       method: "POST",
@@ -49,7 +55,7 @@ const [targetProtein, setTargetProtein] = useState(150);
     setSummary(data.todaySummary);
     setItems(data.items ?? []);
     setSession(data.session);
-  };
+};
 
 useEffect(() => {
   (async () => {
@@ -172,8 +178,14 @@ useEffect(() => {
     const cal = Number(targetCalories);
     const protein = Number(targetProtein);
 
-    if(!Number.isFinite(cal) || cal <= 0) return;
-    if(!Number.isFinite(protein) || protein <= 0) return;
+    if(!Number.isFinite(cal) || cal <= 0) {
+      showToast("error", "칼로리를 입력해주세요.");
+      return;
+    }
+    if(!Number.isFinite(protein) || protein <= 0) {
+      showToast("error", "단백질을 입력해주세요.");
+      return;
+    }
 
       const res = await fetch("/auth/target", {
     method: "PUT",
@@ -183,20 +195,20 @@ useEffect(() => {
   });
 
   if (!res.ok) {
-    alert("저장 실패");
+    showToast("error", "저장에 실패했습니다.");
     return;
   }
 
     const updated = await res.json().catch(() => null);
 
   if(updated) {
-     setUser(updated);
-     alert("저장 성공");
+     setUser(updated);     
   }
   else {
     setUser((prev) => (prev ? { ...prev, targetCalories: cal, targetProtein: protein } : prev));
   }
 
+  showToast("success", "목표가 설정되었어요");
   setGoalOpen(false);
   }
 
@@ -207,7 +219,11 @@ useEffect(() => {
     setItems(res.items ?? []);
   }
 
+  
+
   return (
+     <>
+
   <div className="min-h-screen bg-gray-50">
     <ManualModal
       open={manualOpen}
@@ -227,7 +243,22 @@ useEffect(() => {
       onSave={saveGoal}
     />
 
-    <div className="mx-auto max-w-5xl px-6 py-8">
+ <div className="mx-auto max-w-5xl px-6 py-8">
+  {toast && (
+    <div className="mb-4 flex justify-end">
+      <div
+        className={[
+          "rounded-xl px-4 py-3 text-sm font-medium shadow-sm border",
+          toast.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-red-50 text-red-800 border-red-200",
+        ].join(" ")}
+      >
+        {toast.message}
+      </div>
+    </div>
+  )}
+
       <DashboardHeader
         user={user}
         onOpenGoal={() => setGoalOpen(true)}
@@ -350,6 +381,7 @@ useEffect(() => {
       </section>
     </div>
   </div>
+  </>
 );
 
 }

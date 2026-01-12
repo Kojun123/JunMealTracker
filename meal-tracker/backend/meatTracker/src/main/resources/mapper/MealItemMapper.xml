@@ -5,8 +5,8 @@
 <mapper namespace="com.example.mealTracker.mapper.MealItemMapper">
 
     <insert id="insertItem" parameterType="com.example.mealTracker.domain.MealItem" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO meal_item (user_id, name, count, calories, protein, assumption)
-        VALUES (#{userId}, #{name}, #{count}, #{calories}, #{protein}, #{assumption})
+        INSERT INTO meal_item (user_id, name, count, calories, protein, assumption, meal_date)
+        VALUES (#{userId}, #{name}, #{count}, #{calories}, #{protein}, #{assumption}, ${mealDate)
     </insert>
 
     <select id="findItemsByUser" resultType="com.example.mealTracker.domain.MealItem">
@@ -17,9 +17,11 @@
             calories,
             protein,
             assumption,
-            created_at as createdAt
+            created_at as createdAt,
+            meal_date as mealDate
         FROM meal_item
         WHERE user_id = #{userId}
+        AND meal_date = #{now}
         ORDER BY id ASC
     </select>
 

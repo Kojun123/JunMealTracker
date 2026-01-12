@@ -5,12 +5,14 @@ import com.example.mealTracker.domain.TodaySummary;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
 public interface MealItemMapper {
     int insertItem(MealItem item);
-    List<MealItem> findItemsByUser(@Param("userId") String userId);
+    List<MealItem> findItemsByUser(@Param("userId") String userId, @Param("now") LocalDate now);
     TodaySummary findSummaryByUser(@Param("userId") String userId);
     int deleteItemsBySessionId(@Param("uesrId") String userId);
 }

@@ -6,6 +6,7 @@ import GoalSettingModal from "./components/GoalSettingModal";
 import DashboardHeader from "./components/DashboardHeader";
 import StatsCards from "./components/StatsCards";
 import Composer from "./components/Composer";
+import DatePickerChip from "./components/DatePickerChip";
 
 
 function Dashboard() {
@@ -32,31 +33,15 @@ const [goalOpen, setGoalOpen] = useState(false);
 const [targetCalories, setTargetCalories] = useState(2000);
 const [targetProtein, setTargetProtein] = useState(150);
 
+//toast알림
 const [toast, setToast] = useState(null);
 
-const showToast = (type, message) => {
-    setToast({type, message});
-    setTimeout(() => setToast(null), 2500)
-}
+//datepicker
+const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
 
-const loadDashBoard = async () => {
-    const res = await fetch("/api/meal/today", {
-      credentials: "include",
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
 
-    if(res.status === 401) {
-      navigate("/login");
-      return;
-    }
 
-    const data = await res.json();
-    setSummary(data.todaySummary);
-    setItems(data.items ?? []);
-    setSession(data.session);
-};
-
+//=======================useEffect=======================
 useEffect(() => {
   (async () => {
     const user = await fetch("/auth/me", {
@@ -82,17 +67,45 @@ useEffect(() => {
 }, []);
 
 
-  useEffect(() => {
+useEffect(() => {
     if (!logsLoaded) return;
     localStorage.setItem("logs", JSON.stringify(logs));
-  }, [logs, logsLoaded]); 
+}, [logs, logsLoaded]); 
 
-  useEffect(() => {
+useEffect(() => {
   if (!user) return;
   setTargetCalories(user.targetCalories ?? 2000);
   setTargetProtein(user.targetProtein ?? 150);
 }, [user]);
 
+useEffect(() => {
+  loadDashBoard(selectedDate);
+}, [selectedDate]);
+//=======================useEffect=======================
+
+const showToast = (type, message) => {
+    setToast({type, message});
+    setTimeout(() => setToast(null), 2500)
+}
+
+const loadDashBoard = async (date) => {
+  if (!date) date = dayjs().format("YYYY-MM-DD");
+    const res = await fetch(`/api/meal/today?date=${date}`, {
+      credentials: "include",
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if(res.status === 401) {
+      navigate("/login");
+      return;
+    }
+
+    const data = await res.json();
+    setSummary(data.todaySummary);
+    setItems(data.items ?? []);
+    setSession(data.session);
+};
 
   const sendText = async (text) => {
     const trimmed = (text ?? "").trim();
@@ -278,7 +291,12 @@ useEffect(() => {
       <section className="mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between px-5 py-4">
           <h2 className="text-base font-semibold text-gray-900">오늘 먹은 것</h2>
-          <span className="text-sm text-gray-500">{dayjs().format("YYYY-MM-DD")}</span>
+          
+          <DatePickerChip
+              value={selectedDate}
+              onChange={setSelectedDate}
+            />
+
         </div>
 
         {items.length === 0 ? (

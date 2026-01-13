@@ -17,8 +17,8 @@
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (email, password, created_at)
-        VALUES (#{email}, #{password}, NOW())
+        INSERT INTO users (email, password)
+        VALUES (#{email}, #{password})
     </insert>
 
     <update id="updateTargets">

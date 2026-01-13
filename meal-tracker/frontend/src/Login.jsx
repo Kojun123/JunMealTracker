@@ -94,7 +94,7 @@ export default function Login() {
               <button
                 type="button"
                 className="font-semibold text-gray-900 hover:underline"
-                onClick={() => alert("회원가입은 아직. 인간의 욕망은 무한하지만 개발시간은 유한함.")}
+                onClick={() => navigate("/signup")}
               >
                 회원가입
               </button>

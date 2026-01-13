@@ -2,6 +2,7 @@ package com.example.mealTracker.service;
 
 import com.example.mealTracker.domain.FoodMaster;
 import com.example.mealTracker.domain.MealItem;
+import com.example.mealTracker.domain.MealTrackerUser;
 import com.example.mealTracker.domain.TodaySummary;
 import com.example.mealTracker.dto.ManualRequest;
 import com.example.mealTracker.dto.MealMessageRequest;
@@ -9,6 +10,7 @@ import com.example.mealTracker.dto.MealMessageResponse;
 import com.example.mealTracker.dto.TodayResponse;
 import com.example.mealTracker.mapper.FoodMasterMapper;
 import com.example.mealTracker.mapper.MealItemMapper;
+import com.example.mealTracker.mapper.UserMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class MealService {
     private final OpenAiService openAiService;
     private final MealItemMapper mealItemMapper;
     private final FoodMasterMapper foodMasterMapper;
+    private final UserMapper userMapper;
 
     public List<MealItem> findItemsBySessionId(String userId) {
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
@@ -127,7 +130,6 @@ public class MealService {
     public TodaySummary calcSummary(String userId) {
         double totalCal = 0;
         double totalPro = 0;
-        int targetCal=0, targetPro=0;
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         for (MealItem it : mealItemMapper.findItemsByUser(userId, now)) {
@@ -135,7 +137,8 @@ public class MealService {
             totalPro += it.getProtein();
         }
 
-        return new TodaySummary(totalCal, totalPro, targetCal, targetPro);
+        MealTrackerUser user = userMapper.findByEmail(userId);
+        return new TodaySummary(totalCal, totalPro, user.getTargetCalories(), user.getTargetProtein());
     }
 
     //남은 단백질/칼로리 제공

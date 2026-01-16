@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs"; //날짜 포맷
-import ManualModal from "./components/ManualModal";
+import EditItemModal from "./components/EditItemModal";
 import GoalSettingModal from "./components/GoalSettingModal";
 import DashboardHeader from "./components/DashboardHeader";
 import StatsCards from "./components/StatsCards";
@@ -25,9 +25,9 @@ const [input, setInput] = useState("");
 const [logs, setLogs] = useState([]);
 const [loading, setLoading] = useState(false);
 
-// modals
-const [manualOpen, setManualOpen] = useState(false);
-const [manual, setManual] = useState({ rawName:"", count:1, protein:"", kcal:"" });
+//editModal
+const [editOpen, setEditOpen] = useState(false);
+const [editItem, setEditItem] = useState(null);
 
 const [goalOpen, setGoalOpen] = useState(false);
 const [targetCalories, setTargetCalories] = useState(2000);
@@ -174,13 +174,6 @@ const loadDashBoard = async (date) => {
     }    
   };
 
-
-  //아이템 수정 모달 열기
-  const openManual = (rawName, count) => {
-    setManual({rawName, count, protein:"", kcal:""});
-    setManualOpen(true);
-  };
-
   //아이템 삭제
   const onDelete = async (item) => {
 
@@ -206,30 +199,6 @@ const loadDashBoard = async (date) => {
     const data = await res.json().catch(() => null);
     if (data) handleServerResponse(data);
     else loadDashBoard(selectedDate); 
-  };
-
-
-
-  const submitManual = async() => {
-    const protein = Number(manual.protein);
-    const kcal = Number(manual.kcal);
-
-    if(!Number.isFinite(protein) || protein < 0) return;
-    if(!Number.isFinite(kcal) || kcal < 0) return;
-
-    setManualOpen(false);
-
-    await fetch("/api/meal/manual", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        sessionId: session?.id,
-        rawName: manual.rawName,
-        count: manual.count,
-        protein,
-        kcal
-      })
-    }).then(r=>r.json()).then(handleServerResponse);    
   };
 
   const saveGoal = async() => {
@@ -276,18 +245,68 @@ const loadDashBoard = async (date) => {
     setItems(res.items ?? []);
     setLogs(res.chatLog ?? []);
   }
- 
+
+  const submitEdit = async() => {
+    if (!editItem) return;
+
+    const id = editItem.id;
+    const name = (editItem.name ?? "").trim();
+    const count = Number(editItem.count);
+    const calories = Number(editItem.calories);
+    const protein = Number(editItem.protein);
+
+    if (!name) {
+      showToast("error", "음식명을 입력해주세요.");
+      return;
+    }
+    if (!Number.isFinite(count) || count <= 0) {
+      showToast("error", "수량을 올바르게 입력해주세요.");
+      return;
+    }
+    if (!Number.isFinite(calories) || calories < 0) {
+      showToast("error", "칼로리를 올바르게 입력해주세요.");
+      return;
+    }
+    if (!Number.isFinite(protein) || protein < 0) {
+      showToast("error", "단백질을 올바르게 입력해주세요.");
+      return;
+    }
+
+    const res = await fetch(`/api/meal/item/${editItem.id}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({id, name, count, calories, protein}),
+    });
+
+    if (!res.ok) {
+      showToast("error", "기록 수정에 실패했습니다.");
+      return;
+    }
+
+    const data = await res.json().catch(() => null);
+
+    if(data) handleServerResponse(data);
+    else loadDashBoard(selectedDate);
+
+    showToast("success", "기록이 수정되었어요.");
+    setEditOpen(false);
+    setEditItem(null);
+  }
 
   return (
      <>
 
   <div className="min-h-screen bg-gray-50">
-    <ManualModal
-      open={manualOpen}
-      manual={manual}
-      setManual={setManual}
-      onClose={() => setManualOpen(false)}
-      onSubmit={submitManual}
+    <EditItemModal
+      open={editOpen}
+      item={editItem}
+      setItem={setEditItem}
+      onClose={() => {
+        setEditOpen(false);
+        setEditItem(null);
+       }}
+      onSubmit={submitEdit} 
     />
 
     <GoalSettingModal
@@ -374,7 +393,16 @@ const loadDashBoard = async (date) => {
                     <td className="px-5 py-3">
                         <div className="flex justify-end gap-2">
                           <button
-                            onClick={() => openManual(it.rawName, it.count)}
+                            onClick={() => {
+                              setEditItem({
+                                id: it.id,
+                                name: it.name,
+                                count: it.count,
+                                calories: it.calories,
+                                protein: it.protein                                
+                              });
+                              setEditOpen(true);                                
+                            }}
                             className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
                             title="수정"
                           >

@@ -452,17 +452,18 @@ const loadDashBoard = async (date) => {
 
     <div className="mt-3 space-y-3">
 
-    {loading && (
+    {/* {loading && (
       <div className="flex justify-start">
         <div className="max-w-[60%] rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-700">
           <div className="mb-1 text-xs opacity-70">GPT</div>
           <div className="animate-pulse">입력 중...</div>
         </div>
       </div>
-    )}
+    )} */}
  
 
       {logs.map((log, idx) => {
+        
         const isUser = log.role === "USER";
         const time = log.createdAt
           ? dayjs(log.createdAt).format("HH:mm:ss")

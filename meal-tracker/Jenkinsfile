@@ -22,16 +22,18 @@ stage('Build Backend') {
 }
 
     stage('Build Frontend') {
-      steps {
-        sh '''
-          set -e
-          docker run --rm \
-            -v "$WORKSPACE:/w" -w /w/meal-trackerfrontend \
-            node:20 \
-            bash -lc "npm ci && npm run build"
-        '''
-      }
-    }
+  steps {
+    sh '''
+      set -e
+      docker run --rm \
+        -v "$JENKINS_HOME_HOST/workspace/mealTracker-build:/w" \
+        -w /w/meal-tracker/frontend \
+        node:20 \
+        bash -lc "ls -al && npm install && npm run build"
+    '''
+  }
+}
+
 
     stage('Deploy Files') {
       steps {

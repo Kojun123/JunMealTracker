@@ -29,7 +29,7 @@ stage('Build Backend') {
         -v "$JENKINS_HOME_HOST/workspace/mealTracker-build:/w" \
         -w /w/meal-tracker/frontend \
         node:20 \
-        bash -lc "ls -al && npm install && npm run build"
+        bash -lc "ls -al && npm ci && npm run build"
     '''
   }
 }

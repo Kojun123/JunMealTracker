@@ -47,7 +47,7 @@ stage('Build Backend') {
 
           rm -rf "${DEPLOY_DIR}/nginx/html"
           mkdir -p "${DEPLOY_DIR}/nginx/html"
-          cp -r frontend/dist/* "${DEPLOY_DIR}/nginx/html/"
+          cp -r meal-tracker/frontend/dist/* "${DEPLOY_DIR}/nginx/html/"
         '''
       }
     }

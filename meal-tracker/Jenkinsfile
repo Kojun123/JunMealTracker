@@ -57,7 +57,8 @@ stage('Build Backend') {
         sh '''
           set -e
           cd /opt/meal-docker
-          docker compose up -d --build spring nginx
+          docker compose up -d --build spring
+          docker compose restart nginx
         '''
       }
     }

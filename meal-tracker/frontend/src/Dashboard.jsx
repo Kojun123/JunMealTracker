@@ -45,7 +45,7 @@ const [dateOpen, setDateOpen] = useState(false);
 //=======================useEffect=======================
 useEffect(() => {
   (async () => {
-    const user = await fetch("/auth/me", {
+    const user = await fetch("/api/auth/me", {
         credentials: "include",
         method: "POST",
         headers: { "Content-Type" : "application/json" }
@@ -228,7 +228,7 @@ const loadDashBoard = async (date) => {
       return;
     }
 
-      const res = await fetch("/auth/target", {
+      const res = await fetch("/api/auth/target", {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -353,7 +353,7 @@ const loadDashBoard = async (date) => {
         user={user}
         onOpenGoal={() => setGoalOpen(true)}
         onLogout={async () => {
-          await fetch("/auth/logout", {method: "POST", credentials: "include"}).catch(() => {});
+          await fetch("/api/auth/logout", {method: "POST", credentials: "include"}).catch(() => {});
           navigate("/login");
         }}
       />

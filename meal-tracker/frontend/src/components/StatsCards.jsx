@@ -9,7 +9,7 @@ export default function StatsCards({ summary, user, itemsCount }) {
     <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="text-sm text-gray-500">칼로리</div>
-        <div className="mt-1 text-2xl font-semibold text-gray-900 sm:text-3xl">
+        <div className="mt-1 text-lg font-semibold text-gray-900 sm:text-3xl">
           {totalCalories} / {targetCalories}
           <span className="ml-2 text-sm font-medium text-gray-500 sm:text-base">
             kcal
@@ -19,7 +19,7 @@ export default function StatsCards({ summary, user, itemsCount }) {
 
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <div className="text-sm text-gray-500">단백질</div>
-        <div className="mt-1 text-2xl font-semibold text-gray-900 sm:text-3xl">
+        <div className="mt-1 text-lg font-semibold text-gray-900 sm:text-3xl">
           {totalProtein} / {targetProtein}
           <span className="ml-2 text-sm font-medium text-gray-500 sm:text-base">
             g

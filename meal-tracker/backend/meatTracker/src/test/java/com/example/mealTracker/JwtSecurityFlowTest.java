@@ -79,7 +79,7 @@ public class JwtSecurityFlowTest {
     //쿠키 정상적으로 존재할때 리프레시 하면 200 잘 반환하는지 테스트
     @Test
     void refresh_with_cookie_is_200() throws Exception {
-        String refresh = jwtProvider.createRefreshToken(1L);
+        String refresh = jwtProvider.createRefreshToken(1L, "test@test.com");
 
         mockMvc.perform(post("/api/auth/refresh")
                         .cookie(new Cookie("refreshToken", refresh)))

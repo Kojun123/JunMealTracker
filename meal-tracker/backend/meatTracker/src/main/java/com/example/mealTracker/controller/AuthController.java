@@ -44,11 +44,11 @@ public class AuthController {
             long userId = userMapper.findByEmail(email).getId();
 
             String access = jwtProvider.createAccessToken(userId, vo.getEmail());
-            String refresh = jwtProvider.createRefreshToken(userId);
+            String refresh = jwtProvider.createRefreshToken(userId, vo.getEmail());
 
             ResponseCookie cookie = ResponseCookie.from("refreshToken", refresh)
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
                     .sameSite("Lax")
                     .maxAge(14 * 24 * 60 * 60)
@@ -91,8 +91,9 @@ public class AuthController {
         if (!jwtProvider.isType(refreshToken, "refresh")) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
         long userId = jwtProvider.getUserId(refreshToken);
+        String email = jwtProvider.getEmail(refreshToken);
 
-        String access = jwtProvider.createAccessToken(userId, "test@test.com");
+        String access = jwtProvider.createAccessToken(userId, email);
         return Map.of("accessToken", access);
     }
 }

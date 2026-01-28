@@ -37,12 +37,12 @@ public class JwtProvider {
                     .compact();
     }
 
-    public String createRefreshToken(long userId) {
+    public String createRefreshToken(long userId, String email) {
             Instant now = Instant.now();
             Instant exp = now.plusSeconds(refreshDays * 24 * 60 * 60);
             return Jwts.builder()
                     .subject(String.valueOf(userId))
-                    .claims(Map.of("typ", "refresh"))
+                    .claims(Map.of("email", email, "typ", "refresh"))
                     .issuedAt(Date.from(now))
                     .expiration(Date.from(exp))
                     .signWith(key)

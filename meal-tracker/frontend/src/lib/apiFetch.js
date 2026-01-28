@@ -1,8 +1,16 @@
 let accessToken = null;
 let refreshingPromise = null;
 
+const tokenListeneres = new Set();
+
 export function setAccessToken(token) {
   accessToken = token;
+  tokenListeneres.forEach((cb) => cb(token));
+}
+
+export function subscribeAccessToken(listener) {
+  tokenListeneres.add(listener);
+  return () => tokenListeneres.delete(listener);
 }
 
 async function refreshAccessToken() {
@@ -25,6 +33,12 @@ async function refreshAccessToken() {
   return token;
 }
 
+export async function restoreSession() {
+  const token = await refreshAccessToken();
+  setAccessToken(token);
+  return !!token;
+}
+
 export async function apiFetch(url, options = {}) {
   if (url.startsWith("/api/auth/login") || url.startsWith("/api/auth/refresh")) {
     return fetch(url, { ...options, credentials: "include" });
@@ -32,8 +46,6 @@ export async function apiFetch(url, options = {}) {
 
   const headers = new Headers(options.headers || {});
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
-
-   console.log("[apiFetch]", url, "token?", !!accessToken, "authHeader?", headers.get("Authorization"));
 
   const res = await fetch(url, {
     ...options,
@@ -49,16 +61,15 @@ export async function apiFetch(url, options = {}) {
     setAccessToken(null);
     return res;
   }
-  console.log("newtoken", newToken);
+  
   setAccessToken(newToken);
 
   const retryHeaders = new Headers(options.headers || {});
   retryHeaders.set("Authorization", `Bearer ${newToken}`);
 
-  return fetch(url, {
+  return apiFetch(url, {
     ...options,
     headers: retryHeaders,
-    credentials: "include",
     __retried: true,
   });
 }

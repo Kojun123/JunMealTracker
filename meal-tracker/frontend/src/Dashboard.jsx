@@ -8,7 +8,7 @@ import StatsCards from "./components/StatsCards";
 import Composer from "./components/Composer";
 import Swal from "sweetalert2";
 import DatePopover from "./components/DatePopover";
-import { apiFetch } from "./lib/apiFetch";
+import { apiFetch, setAccessToken } from "./lib/apiFetch";
 
 
 function Dashboard() {
@@ -19,7 +19,6 @@ const navigate = useNavigate();
 const [user, setUser] = useState(null);
 const [summary, setSummary] = useState(null);
 const [items, setItems] = useState([]);
-const [session, setSession] = useState(null);
 
 // chat/ui
 const [input, setInput] = useState("");
@@ -39,8 +38,6 @@ const [toast, setToast] = useState(null);
 
 //datepicker
 const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
-const [dateOpen, setDateOpen] = useState(false);
-
 
 
 //=======================useEffect=======================
@@ -109,7 +106,6 @@ const loadDashBoard = async (date) => {
     console.log("dashboard data", data);
 
     handleServerResponse(data);
-    setSession(data.session);
 };
 
   const sendText = async (text) => {
@@ -355,7 +351,8 @@ const loadDashBoard = async (date) => {
         onOpenGoal={() => setGoalOpen(true)}
         onLogout={async () => {
           await apiFetch("/api/auth/logout", {method: "POST", credentials: "include"}).catch(() => {});
-          navigate("/login");
+          setAccessToken(null);
+          navigate("/login");          
         }}
       />
 

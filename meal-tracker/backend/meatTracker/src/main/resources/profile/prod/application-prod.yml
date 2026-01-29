@@ -1,0 +1,67 @@
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-minutes: 15
+    refresh-days: 14
+
+spring:
+  application:
+    name: meal-tracker
+  datasource:
+    url: jdbc:mysql://mysql:3306/meal?serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: Asia/Seoul
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+  banner:
+    location: classpath:/profile/prod/banner-prod.txt
+
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.example.mealtracker.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+openai:
+  apiKey: ${OPENAI_API_KEY}
+  model: gpt-5.2
+
+logging:
+  level:
+    root: INFO
+    # ===== Spring Framework =====
+    org.springframework: INFO
+    org.springframework.web: INFO
+
+    # ===== Spring Security =====
+    org.springframework.security: DEBUG
+    org.springframework.security.authentication: DEBUG
+    org.springframework.security.web.authentication: DEBUG
+
+    # ===== DB =====
+    org.mybatis: DEBUG
+    org.mybatis.spring: DEBUG
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.jdbc: DEBUG
+    com.zaxxer.hikari: DEBUG
+
+    com.example: DEBUG
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+
+
+
+

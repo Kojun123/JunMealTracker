@@ -1,60 +1,34 @@
-server:
-  port: 8080
-
-app:
-  jwt:
-    secret: ${JWT_SECRET}
-    access-minutes: 15
-    refresh-days: 14
-
 spring:
-  application:
-    name: meal-tracker
-  datasource:
-    url: jdbc:mysql://localhost:3306/meal?serverTimezone=Asia/Seoul
-    username: meal
-    password: mealpass
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jackson:
-    time-zone: Asia/Seoul
+  profiles:
+    active: local
 
-mybatis:
-  mapper-locations: classpath:/mapper/**/*.xml
-  type-aliases-package: com.example.mealtracker.domain
-  configuration:
-    map-underscore-to-camel-case: true
+---
+# local
+spring:
+  config:
+    activate:
+      on-profile: local
+    import: "classpath:profile/local/application-local.yml"
 
-openai:
-  apiKey: ${OPENAI_API_KEY}
-  model: gpt-5.2
+---
+# prod
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import: "classpath:profile/prod/application-prod.yml"
 
-logging:
-  level:
-    root: INFO
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            scope:
+              - email
+              - profile
 
-
-
-    # ===== Spring Framework =====
-    org.springframework: INFO
-    org.springframework.web: INFO
-
-    # ===== Spring Security =====
-    org.springframework.security: DEBUG
-    org.springframework.security.authentication: DEBUG
-    org.springframework.security.web.authentication: DEBUG
-
-    # ===== DB =====
-    org.mybatis: DEBUG
-    org.mybatis.spring: DEBUG
-    org.springframework.jdbc.core: DEBUG
-    com.zaxxer.hikari: INFO
-
-    # ===== 네 프로젝트 패키지 =====
-    com.example: DEBUG
-
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
-
-
+jwt:
+  access-token-expire-seconds: 1800
+  refresh-token-expire-seconds: 1209600
 
 

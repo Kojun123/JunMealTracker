@@ -6,6 +6,8 @@ app:
     secret: ${JWT_SECRET}
     access-minutes: 15
     refresh-days: 14
+  frontend:
+    base-url: http://localhost:5173
 
 spring:
   application:

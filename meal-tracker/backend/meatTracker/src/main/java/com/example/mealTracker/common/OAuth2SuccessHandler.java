@@ -4,6 +4,7 @@ import com.example.mealTracker.domain.MealTrackerUser;
 import com.example.mealTracker.mapper.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,6 +18,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtProvider jwtProvider;
     private final UserMapper userMapper;
+
+    @Value("${app.frontend.base-url}")
+    private String frontUrl;
 
     public OAuth2SuccessHandler(JwtProvider jwtProvider, UserMapper userMapper) {
         this.jwtProvider = jwtProvider;
@@ -57,6 +61,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         response.addHeader("Set-Cookie", cookie.toString());
 
-        response.sendRedirect("http://localhost:5173/oauth/callback");
+        response.sendRedirect(frontUrl+"/oauth/callback");
     }
 }

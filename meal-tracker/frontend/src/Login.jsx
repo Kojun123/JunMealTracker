@@ -8,10 +8,7 @@ export default function Login() {
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  const googleLogin = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/google";
-};
+  
 
 
   const submit = async (e) => {
@@ -119,7 +116,10 @@ export default function Login() {
           <div className="mt-4">
             <button
               type="button"
-              onClick={googleLogin}
+              onClick={() => {
+                window.location.href =
+                 `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+              }}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-800 transition hover:bg-gray-50"
             >
               <img

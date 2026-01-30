@@ -305,280 +305,280 @@ const loadDashBoard = async (date) => {
   }
 
   return (
-     <>
-
-  <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-
-    <EditItemModal
-      open={editOpen}
-      item={editItem}
-      setItem={setEditItem}
-      onClose={() => {
-        setEditOpen(false);
-        setEditItem(null);
-       }}
-      onSubmit={submitEdit} 
-    />
-
-    <GoalSettingModal
-      open={goalOpen}
-      targetCalories={targetCalories}
-      setTargetCalories={setTargetCalories}
-      targetProtein={targetProtein}
-      setTargetProtein={setTargetProtein}
-      onClose={() => setGoalOpen(false)}
-      onSave={saveGoal}
-    />
-
- <div className="mx-auto max-w-5xl px-6 py-8">
-  {toast && (
-    <div className="mb-4 flex justify-end">
-      <div
-        className={[
-          "rounded-xl px-4 py-3 text-sm font-medium shadow-sm border",
-          toast.type === "success"
-            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-            : "bg-red-50 text-red-800 border-red-200",
-        ].join(" ")}
-      >
-        {toast.message}
-      </div>
+  <div className="min-h-dvh bg-slate-950 text-slate-100">
+    {/* background */}
+    <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      <div className="absolute -top-24 left-1/2 h-72 w-[520px] -translate-x-1/2 rounded-full bg-sky-300/20 blur-3xl" />
+      <div className="absolute -bottom-24 left-1/3 h-72 w-[520px] -translate-x-1/2 rounded-full bg-fuchsia-400/15 blur-3xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.12)_1px,transparent_0)] [background-size:22px_22px]" />
     </div>
-  )}
 
-      <DashboardHeader
-        user={user}
-        onOpenGoal={() => setGoalOpen(true)}
-        onLogout={async () => {
-          await apiFetch("/api/auth/logout", {method: "POST", credentials: "include"}).catch(() => {});
-          setAccessToken(null);
-          navigate("/login");          
+    <div className="relative mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <EditItemModal
+        open={editOpen}
+        item={editItem}
+        setItem={setEditItem}
+        onClose={() => {
+          setEditOpen(false);
+          setEditItem(null);
         }}
+        onSubmit={submitEdit}
       />
 
-      <StatsCards
-        summary={summary}
-        user={user}
-        itemsCount={items?.length ?? 0}
+      <GoalSettingModal
+        open={goalOpen}
+        targetCalories={targetCalories}
+        setTargetCalories={setTargetCalories}
+        targetProtein={targetProtein}
+        setTargetProtein={setTargetProtein}
+        onClose={() => setGoalOpen(false)}
+        onSave={saveGoal}
       />
 
-      {/* Items table */}
-      <section className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4">
-          <h2 className="text-base font-semibold text-gray-900">오늘 먹은 것</h2>
-
-           <DatePopover
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-           />
-          
+      {/* toast */}
+      {toast && (
+        <div className="mb-4 flex justify-end">
+          <div
+            className={[
+              "rounded-2xl border px-4 py-3 text-sm font-semibold backdrop-blur",
+              toast.type === "success"
+                ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
+                : "border-rose-400/20 bg-rose-500/10 text-rose-100",
+            ].join(" ")}
+          >
+            {toast.message}
+          </div>
         </div>
+      )}
+
+      {/* header */}
+      <div className="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_70px_-30px_rgba(0,0,0,0.9)] backdrop-blur sm:p-6">
+        <DashboardHeader
+          user={user}
+          onOpenGoal={() => setGoalOpen(true)}
+          onLogout={async () => {
+            await apiFetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+            }).catch(() => {});
+            setAccessToken(null);
+            navigate("/login");
+          }}
+        />
+      </div>
+
+      {/* stats */}
+      <div className="mt-5">
+        <StatsCards summary={summary} user={user} itemsCount={items?.length ?? 0} />
+      </div>
+
+      {/* items + composer */}
+      <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 shadow-[0_20px_70px_-30px_rgba(0,0,0,0.9)] backdrop-blur">
+        <div className="flex items-center justify-between px-5 py-4 sm:px-6">
+          <h2 className="text-base font-semibold text-slate-100">오늘 먹은 것</h2>
+
+          <div className="text-slate-200">
+            <DatePopover selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+          </div>
+        </div>
+
+        <div className="border-t border-white/10" />
 
         {items.length === 0 ? (
-  <div className="px-5 pb-6 text-sm text-gray-600">
-    아직 기록이 없어요
-  </div>
-) : (
-  <>
-    {/* Mobile: cards */}
-    <div className="px-5 pb-4 sm:hidden">
-      <div className="space-y-3">
-        {items.map((it) => (
-          <div key={it.id} className="rounded-xl border border-gray-100 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-gray-900">
-                  {it.name}
-                </div>
-                <div className="mt-1 text-xs text-gray-500">
-                  {it.createdAt ? dayjs(it.createdAt).format("YYYY-MM-DD HH:mm") : "-"}
-                </div>
-              </div>
-
-              <div className="flex shrink-0 gap-2">
-                <button
-                  onClick={() => {
-                    setEditItem({
-                      id: it.id,
-                      name: it.name,
-                      count: it.count,
-                      calories: it.calories,
-                      protein: it.protein,
-                    });
-                    setEditOpen(true);
-                  }}
-                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700"
-                  title="수정"
-                >
-                  ✏️
-                </button>
-
-                <button
-                  onClick={() => onDelete(it)}
-                  className="rounded-lg border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700"
-                  title="삭제"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-              <div className="rounded-lg bg-gray-50 px-3 py-2">
-                <div className="text-gray-500">수량</div>
-                <div className="font-semibold text-gray-900">x{it.count}</div>
-              </div>
-              <div className="rounded-lg bg-gray-50 px-3 py-2">
-                <div className="text-gray-500">칼로리</div>
-                <div className="font-semibold text-gray-900">
-                  {Math.round(it.calories)}
-                </div>
-              </div>
-              <div className="rounded-lg bg-gray-50 px-3 py-2">
-                <div className="text-gray-500">단백질</div>
-                <div className="font-semibold text-gray-900">
-                  {Math.round(it.protein)}
-                </div>
-              </div>
-            </div>
+          <div className="px-5 py-6 text-sm text-slate-300 sm:px-6">
+            아직 기록이 없어요
           </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Desktop: table */}
-    <div className="hidden overflow-x-auto sm:block">
-      <table className="w-full text-left text-sm">
-        <thead className="border-y border-gray-100 text-xs text-gray-500">
-          <tr>
-            <th className="px-5 py-3">음식</th>
-            <th className="px-5 py-3">수량</th>
-            <th className="px-5 py-3">칼로리</th>
-            <th className="px-5 py-3">단백질</th>
-            <th className="px-5 py-3">시간</th>
-            <th className="px-5 py-3 text-right"> </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {items.map((it) => (
-            <tr key={it.id} className="hover:bg-gray-50">
-              <td className="px-5 py-3 font-medium text-gray-900">{it.name}</td>
-              <td className="px-5 py-3 text-gray-700">x{it.count}</td>
-              <td className="px-5 py-3 text-gray-700">{Math.round(it.calories)}</td>
-              <td className="px-5 py-3 text-gray-700">{Math.round(it.protein)}</td>
-              <td className="px-5 py-3 text-gray-500">
-                {it.createdAt ? dayjs(it.createdAt).format("YYYY-MM-DD HH:mm") : "-"}
-              </td>
-              <td className="px-5 py-3">
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setEditItem({
-                        id: it.id,
-                        name: it.name,
-                        count: it.count,
-                        calories: it.calories,
-                        protein: it.protein,
-                      });
-                      setEditOpen(true);
-                    }}
-                    className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                    title="수정"
+        ) : (
+          <>
+            {/* Mobile cards */}
+            <div className="px-5 py-4 sm:hidden">
+              <div className="space-y-3">
+                {items.map((it) => (
+                  <div
+                    key={it.id}
+                    className="rounded-2xl border border-white/10 bg-slate-950/30 p-4"
                   >
-                    ✏️
-                  </button>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-slate-100">
+                          {it.name}
+                        </div>
+                        <div className="mt-1 text-xs text-slate-400">
+                          {it.createdAt ? dayjs(it.createdAt).format("YYYY-MM-DD HH:mm") : "-"}
+                        </div>
+                      </div>
 
-                  <button
-                    onClick={() => onDelete(it)}
-                    className="rounded-lg border border-red-200 bg-white px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
-                    title="삭제"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </>
-)}
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          onClick={() => {
+                            setEditItem({
+                              id: it.id,
+                              name: it.name,
+                              count: it.count,
+                              calories: it.calories,
+                              protein: it.protein,
+                            });
+                            setEditOpen(true);
+                          }}
+                          className="rounded-xl border border-white/10 bg-white/5 px-2 py-1 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                          title="수정"
+                        >
+                          ✏️
+                        </button>
 
+                        <button
+                          onClick={() => onDelete(it)}
+                          className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15"
+                          title="삭제"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
 
-        <Composer
-          input={input}
-          setInput={setInput}
-          onSend={send}
-          loading={loading}
-        />
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                        <div className="text-slate-400">수량</div>
+                        <div className="font-semibold text-slate-100">x{it.count}</div>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                        <div className="text-slate-400">칼로리</div>
+                        <div className="font-semibold text-slate-100">
+                          {Math.round(it.calories)}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                        <div className="text-slate-400">단백질</div>
+                        <div className="font-semibold text-slate-100">
+                          {Math.round(it.protein)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto sm:block">
+              <table className="w-full text-left text-sm">
+                <thead className="border-y border-white/10 text-xs text-slate-300">
+                  <tr>
+                    <th className="px-6 py-3">음식</th>
+                    <th className="px-6 py-3">수량</th>
+                    <th className="px-6 py-3">칼로리</th>
+                    <th className="px-6 py-3">단백질</th>
+                    <th className="px-6 py-3">시간</th>
+                    <th className="px-6 py-3 text-right"> </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {items.map((it) => (
+                    <tr key={it.id} className="hover:bg-white/5">
+                      <td className="px-6 py-3 font-semibold text-slate-100">{it.name}</td>
+                      <td className="px-6 py-3 text-slate-200">x{it.count}</td>
+                      <td className="px-6 py-3 text-slate-200">{Math.round(it.calories)}</td>
+                      <td className="px-6 py-3 text-slate-200">{Math.round(it.protein)}</td>
+                      <td className="px-6 py-3 text-slate-400">
+                        {it.createdAt ? dayjs(it.createdAt).format("YYYY-MM-DD HH:mm") : "-"}
+                      </td>
+                      <td className="px-6 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setEditItem({
+                                id: it.id,
+                                name: it.name,
+                                count: it.count,
+                                calories: it.calories,
+                                protein: it.protein,
+                              });
+                              setEditOpen(true);
+                            }}
+                            className="rounded-xl border border-white/10 bg-white/5 px-2 py-1 text-xs font-semibold text-slate-100 hover:bg-white/10"
+                            title="수정"
+                          >
+                            ✏️
+                          </button>
+
+                          <button
+                            onClick={() => onDelete(it)}
+                            className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15"
+                            title="삭제"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        <div className="border-t border-white/10" />
+
+        <div className="p-4 sm:p-5">
+          <Composer input={input} setInput={setInput} onSend={send} loading={loading} />
+        </div>
       </section>
 
-     <section className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-    <h3 className="text-base font-semibold text-gray-900">대화 로그</h3>
+      {/* chat logs */}
+      <section className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_70px_-30px_rgba(0,0,0,0.9)] backdrop-blur sm:p-6">
+        <h3 className="text-base font-semibold text-slate-100">대화 로그</h3>
 
-    <div className="mt-3 space-y-3">
+        <div className="mt-3 space-y-3">
+          {logs.map((log, idx) => {
+            const isUser = log.role === "USER";
+            const time = log.createdAt ? dayjs(log.createdAt).format("HH:mm:ss") : null;
 
-    {/* {loading && (
-      <div className="flex justify-start">
-        <div className="max-w-[60%] rounded-2xl bg-gray-100 px-4 py-3 text-sm text-gray-700">
-          <div className="mb-1 text-xs opacity-70">GPT</div>
-          <div className="animate-pulse">입력 중...</div>
-        </div>
-      </div>
-    )} */}
- 
-
-      {logs.map((log, idx) => {
-        
-        const isUser = log.role === "USER";
-        const time = log.createdAt
-          ? dayjs(log.createdAt).format("HH:mm:ss")
-          : null;
-
-        return (
-          <div
-            key={idx}
-            className={["flex", isUser ? "justify-end" : "justify-start"].join(" ")}
-          >
-            <div
-              className={[
-                "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                isUser ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900",
-              ].join(" ")}
-            >
-              <div className="mb-1 text-xs opacity-70">
-                {isUser ? "나" : "GPT"}
-              </div>
-
-              <div className="whitespace-pre-line">
-                {log.pending ? <span className="animate-pulse">{log.log}</span> : log.log}
-              </div>
-
-              
-              {time && (
+            return (
+              <div
+                key={idx}
+                className={["flex", isUser ? "justify-end" : "justify-start"].join(" ")}
+              >
                 <div
                   className={[
-                    "mt-1 text-[11px] opacity-60",
-                    isUser ? "text-right" : "text-left",
+                    "max-w-[80%] rounded-2xl border px-4 py-3 text-sm leading-relaxed",
+                    isUser
+                      ? "border-white/10 bg-slate-950/60 text-slate-100"
+                      : "border-white/10 bg-white/5 text-slate-100",
                   ].join(" ")}
                 >
-                  {time}
+                  <div className="mb-1 text-xs text-slate-300">
+                    {isUser ? "나" : "GPT"}
+                  </div>
+
+                  <div className="whitespace-pre-line text-slate-100">
+                    {log.pending ? <span className="animate-pulse">{log.log}</span> : log.log}
+                  </div>
+
+                  {time && (
+                    <div
+                      className={[
+                        "mt-1 text-[11px] text-slate-400",
+                        isUser ? "text-right" : "text-left",
+                      ].join(" ")}
+                    >
+                      {time}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-    </div>
-  </section>  
-
-      
+      <div className="mt-6 text-center text-[11px] text-slate-500">
+        © Meal Tracker
+      </div>
     </div>
   </div>
-  </>
 );
+
 
 }
 

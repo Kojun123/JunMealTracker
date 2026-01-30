@@ -1,2 +1,7 @@
 # local mysql data
 meal-tracker/DB/meal_mysql_data/
+local.env
+meal-tracker/frontend/src/components/GoalSettingModal.jsx
+mealEC2key.pem
+meal-tracker/frontend/.env
+meal_dump.sql

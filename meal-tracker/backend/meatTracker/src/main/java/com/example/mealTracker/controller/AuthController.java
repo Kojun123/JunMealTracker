@@ -61,6 +61,22 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response, Authentication auth) {
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok().build();
+    }
+
+
     @PostMapping("/me")
     public ResponseEntity<MealTrackerUserResponse> me(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

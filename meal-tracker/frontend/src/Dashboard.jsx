@@ -45,7 +45,7 @@ const [favSheetOpen, setFavSheetOpen] = useState(false);
 const [favorites, setFavorites] = useState([]);
 
 const loadFavorites = async () => {
-  const res = await apiFetch("/api/meal/favorite", {
+  const res = await apiFetch("/api/meal/favorite", { 
     method: "GET",
     credentials: "include"
   });

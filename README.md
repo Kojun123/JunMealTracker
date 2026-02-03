@@ -69,9 +69,11 @@
 
 ---
 
-## API 개요
+## 대략적인 화면 소개
 
-* 미정
+* 대시보
+<img width="1772" height="1272" alt="image" src="https://github.com/user-attachments/assets/3a7ca604-58eb-4b48-8314-20ca8f92d97e" />
+
 * 즐겨찾기 정렬(sort_order)은 추후 드래그 정렬 확장 가능
 
 ---

@@ -8,6 +8,7 @@ import com.example.mealTracker.dto.SignupRequest;
 import com.example.mealTracker.dto.UpdateTargetsResponse;
 import com.example.mealTracker.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,18 +44,22 @@ public class UserService {
     }
 
     public void sign(SignupRequest vo) {
-        String userId = vo.email();
+        String email = vo.email();
         String password = vo.password();
 
-        if (userId.isBlank() || password.isBlank()) throw new IllegalArgumentException("id 혹은 pw가 비어있습니다.");
-
-        if(userMapper.findByEmail(userId) != null) throw new IllegalStateException("이미 가입된 이메일 입니다.");
+        if (email.isBlank() || password.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST ,"id 혹은 pw가 비어있습니다.");
 
         MealTrackerUser user = new MealTrackerUser();
         user.setEmail(vo.email());
-
         user.setPassword(passwordEncoder.encode(vo.password()));
 
-        userMapper.insert(user);
+        try {
+            userMapper.insert(user);
+        } catch (DuplicateKeyException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT ,"이미 가입된 이메일 입니다.");
+        }
+
+
+
     }
 }

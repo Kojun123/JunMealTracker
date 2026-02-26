@@ -33,7 +33,7 @@ export default function Signup() {
         body: JSON.stringify({ email: e1, password }),
         credentials: "include",
       });
-
+      console.log('res',res);
       if (res.status === 409) {
         setErr("이미 존재하는 이메일입니다");
         return;

@@ -1,6 +1,5 @@
 # JunMealTracker
 
-https://junmeal.com
 
 간단한 입력만으로 음식 기록을 남기고, AI 기반 파싱을 통해 칼로리·단백질을 자동 분석하는 개인 식단 트래커입니다. 
 

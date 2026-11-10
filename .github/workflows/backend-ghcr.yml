@@ -1,0 +1,69 @@
+
+name: Build Backend and Push to GHCR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소 코드 가져오기
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Java 21 준비
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: meal-tracker/backend/meatTracker/**/*.gradle*
+
+      # 3. Spring Boot JAR 빌드
+      - name: Build Spring Boot
+        working-directory: meal-tracker/backend/meatTracker
+        run: |
+          chmod +x gradlew
+          ./gradlew clean bootJar
+
+      # 4. Docker 빌드에 필요한 파일 준비
+      - name: Prepare Docker context
+        run: |
+          mkdir -p .docker-build
+          JAR=$(find meal-tracker/backend/meatTracker/build/libs \
+            -maxdepth 1 -name '*.jar' ! -name '*-plain.jar' \
+            -print -quit)
+          test -n "$JAR"
+          cp "$JAR" .docker-build/app.jar
+
+      # 5. GHCR 이미지 이름 구성
+      - name: Set image name
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}-backend"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      # 6. GHCR 로그인
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 7. Docker 이미지 빌드 및 업로드
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./.docker-build
+          file: ./meal-tracker/backend/meatTracker/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}

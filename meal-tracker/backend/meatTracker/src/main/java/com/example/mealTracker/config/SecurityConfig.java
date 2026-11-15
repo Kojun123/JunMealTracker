@@ -30,6 +30,9 @@ public class SecurityConfig {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public JwtProvider jwtProvider(
             @Value("${app.jwt.secret}") String secret,
@@ -76,7 +79,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://54.116.25.255", "https://54.116.25.255", "https://junmeal.com"));
+        config.setAllowedOrigins(allowedOrigins);
+//        config.setAllowedOriginPatterns(List.of("http://localhost:5173",
+//                "http://54.116.25.255",
+//                "https://54.116.25.255",
+//                "https://junmeal.com",
+//                "http://localhost:8082"  // Docker 프론트엔드 테스트
+//        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setMaxAge(3600L);

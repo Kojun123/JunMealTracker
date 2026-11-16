@@ -1,5 +1,6 @@
 server:
   port: ${SERVER_PORT:8081}
+  forward-headers-strategy: framework
 
 app:
   jwt:
@@ -28,6 +29,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/api/login/oauth2/code/{registrationId}"
   banner:
     location: classpath:/profile/local/banner-local.txt
 

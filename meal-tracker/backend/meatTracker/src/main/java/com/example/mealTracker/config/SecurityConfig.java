@@ -59,16 +59,19 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, ex) -> res.sendError(403))
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/signup", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/signup", "/api/oauth2/**", "/api/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler)
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(auth -> auth
+                                .baseUri("/api/oauth2/authorization"))
+                        .redirectionEndpoint(redir -> redir
+                                .baseUri("/api/login/oauth2/code/*"))
+                        .successHandler(oAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             logger.error("OAuth2 login failed: {}", exception.getClass().getSimpleName());
                             logger.error("OAuth2 failed msg: {}", exception.getMessage());
-                            exception.printStackTrace();
-
-                            response.sendError(401, "oauth failed:" + exception.getMessage());
+                            response.sendError(401, "oauth failed");
                         })
                 )
                 .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)

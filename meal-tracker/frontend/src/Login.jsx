@@ -36,7 +36,7 @@ export default function Login() {
 
   const googleLogin = () => {
     window.location.href =
-      `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+      "/api/oauth2/authorization/google";
   };
 
   return (

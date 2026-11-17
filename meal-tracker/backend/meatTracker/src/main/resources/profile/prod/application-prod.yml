@@ -45,23 +45,23 @@ openai:
 logging:
   level:
     root: INFO
-    # ===== Spring Framework =====
-    org.springframework: INFO
-    org.springframework.web: INFO
-
-    # ===== Spring Security =====
-    org.springframework.security: DEBUG
-    org.springframework.security.authentication: DEBUG
-    org.springframework.security.web.authentication: DEBUG
-
-    # ===== DB =====
-    org.mybatis: DEBUG
-    org.mybatis.spring: DEBUG
-    org.springframework.jdbc.core: DEBUG
-    org.springframework.jdbc: DEBUG
-    com.zaxxer.hikari: DEBUG
-
-    com.example: DEBUG
+#    # ===== Spring Framework =====
+#    org.springframework: INFO
+#    org.springframework.web: INFO
+#
+#    # ===== Spring Security =====
+#    org.springframework.security: DEBUG
+#    org.springframework.security.authentication: DEBUG
+#    org.springframework.security.web.authentication: DEBUG
+#
+#    # ===== DB =====
+#    org.mybatis: DEBUG
+#    org.mybatis.spring: DEBUG
+#    org.springframework.jdbc.core: DEBUG
+#    org.springframework.jdbc: DEBUG
+#    com.zaxxer.hikari: DEBUG
+#
+#    com.example: DEBUG
 
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

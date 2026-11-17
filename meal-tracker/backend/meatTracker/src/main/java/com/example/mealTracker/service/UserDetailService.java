@@ -19,7 +19,7 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        logger.info("loadUserByUsername : " + email);
+
         MealTrackerUser user = userMapper.findByEmail(email);
 
         if (user == null) {

@@ -88,7 +88,6 @@ useEffect(() => {
     
     const data = await user.json();
     setUser(data);
-    console.log("user", data);
     
   })();
 }, []);
@@ -101,7 +100,6 @@ useEffect(() => {
 }, [user]);
 
 useEffect(() => {
-  console.log("selectedDate changed", selectedDate);
   loadDashBoard(selectedDate);
 }, [selectedDate]);
 
@@ -126,7 +124,6 @@ const loadDashBoard = async (date) => {
     }
 
     const data = await res.json();
-    console.log("dashboard data", data);
 
     handleServerResponse(data);
 };

@@ -112,10 +112,12 @@ export default function Composer({
     const text = combinedText.trim();
     if (!text || loading) return;
 
-    onSend(text);
+    const started = onSend(text);    
     
-    setTokens([]);
-    setInput("");
+    if (started) {
+      setTokens([]);
+      setInput("");
+    }
   };
 
   return (

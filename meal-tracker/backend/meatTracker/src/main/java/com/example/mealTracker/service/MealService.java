@@ -39,6 +39,14 @@ public class MealService {
         if (msg.isBlank()) {
             return buildResponse("빈 입력값입니다.", userId);
         }
+
+        if (msg.length() > 200) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "식단 입력은 200자 이내로 입력해주세요."
+            );
+        }
+
         //유저 요청 로그저장
         insertLog(new MealLogRequest(userId, msg, Role.USER));
 
@@ -55,7 +63,7 @@ public class MealService {
 
         for (JsonNode it : itemsNode) {
             String rawName = it.path("name").asText(); // 사용자가 입력한 음식이름
-            int count = it.path("count").asInt(1); // 음식수량
+            int count = it.path("count").asInt(1); // 음식수량~
             if (count < 1) count = 1;
             int calories = it.path("calories").asInt(0) * count;
             int protein = it.path("protein").asInt(0) * count;

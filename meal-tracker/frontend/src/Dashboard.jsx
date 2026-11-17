@@ -36,6 +36,7 @@ const [targetProtein, setTargetProtein] = useState(150);
 
 //toast알림
 const [toast, setToast] = useState(null);
+const [inputError, setInputError] = useState("");
 
 //datepicker
 const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
@@ -132,8 +133,7 @@ const loadDashBoard = async (date) => {
     const trimmed = (text ?? "").trim();
     if (!trimmed || loading) return;
 
-    setLoading(true);  
-    setInput("");
+   setLoading(true);
 
     const userMsgId = crypto.randomUUID();
     const gptMsgId = crypto.randomUUID();
@@ -190,14 +190,20 @@ const loadDashBoard = async (date) => {
 
   };
   // test
-  const send = async (textArg) => {
-    const text = (textArg ?? input).trim();
-    if (!text || loading) return;
+ const send = (textArg) => {
+  const text = (textArg ?? input).trim();
 
-    setLoading(true);
-    
-    await sendText(text);      
-  };
+  if (!text || loading) return false;
+
+  if (text.length > 200) {
+    setInputError("식단 입력은 200자 이내로 작성해주세요.");
+    return false;
+  }
+
+  setInputError("");
+  sendText(text);
+  return true;
+};
 
   //아이템 삭제
   const onDelete = async (item) => {
@@ -358,23 +364,7 @@ const loadDashBoard = async (date) => {
   favorites={favorites}
   setFavorites={setFavorites}
   reloadFavorites={loadFavorites}
-/>
-
-      {/* toast */}
-      {toast && (
-        <div className="mb-4 flex justify-end">
-          <div
-            className={[
-              "rounded-2xl border px-4 py-3 text-sm font-semibold backdrop-blur",
-              toast.type === "success"
-                ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
-                : "border-rose-400/20 bg-rose-500/10 text-rose-100",
-            ].join(" ")}
-          >
-            {toast.message}
-          </div>
-        </div>
-      )}
+/>    
 
       {/* header */}
       <div className="rounded-3xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_70px_-30px_rgba(0,0,0,0.9)] backdrop-blur sm:p-6">
@@ -546,6 +536,22 @@ const loadDashBoard = async (date) => {
         <div className="border-t border-white/10" />
 
         <div className="p-4 sm:p-5">
+          {/* toast */}
+          {toast && (
+            <div className="fixed right-4 top-4 z-50">
+              <div
+                className={[
+                  "rounded-2xl border px-4 py-3 text-sm font-semibold backdrop-blur",
+                  toast.type === "success"
+                    ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
+                    : "border-rose-400/20 bg-rose-500/10 text-rose-100",
+                ].join(" ")}
+              >
+                {toast.message}
+              </div>
+            </div>
+          )}
+
           <Composer
               input={input}
               setInput={setInput}
@@ -555,6 +561,14 @@ const loadDashBoard = async (date) => {
               favorites={favorites}
               onOpenFavoritesSheet={() => setFavSheetOpen(true)}
           />
+
+        {inputError && (
+          <p className="mt-2 text-sm text-rose-400" role="alert">
+            {inputError}
+          </p>
+        )}
+
+          
         </div>
       </section>
 

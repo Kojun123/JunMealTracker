@@ -6,14 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Service
 public class OpenAiService {
@@ -39,6 +43,7 @@ public class OpenAiService {
     }
 
     public JsonNode parseMealAction(String userText) {
+
         try {
             Map<String, Object> schema = Map.of(
                     "type", "object",
@@ -117,6 +122,13 @@ public class OpenAiService {
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(JsonNode.class)
+                    .timeout(Duration.ofSeconds(60)) // 응답 1m 타임아웃
+                    .onErrorMap(
+                            TimeoutException.class,
+                            e -> new ResponseStatusException(
+                                    HttpStatus.GATEWAY_TIMEOUT, "AI 응답 시간이 초과되었습니다."
+                            )
+                    )
                     .block();
 
             String jsonText = extractOutputText(resp);
@@ -125,7 +137,11 @@ public class OpenAiService {
         } catch (WebClientResponseException e) {
             logger.error("OpenAI status={} body={}", e.getStatusCode(), e.getResponseBodyAsString());
             throw e;
-        } catch (Exception e) {
+        }
+        catch (ResponseStatusException e) {
+            throw e;
+        }
+        catch (Exception e) {
             return objectMapper.createObjectNode()
                     .put("intent", "UNKNOWN")
                     .put("assistantText", "GPT 파싱 실패. 입력을 더 구체적으로 써줘")

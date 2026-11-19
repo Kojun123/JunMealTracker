@@ -170,6 +170,19 @@ const loadDashBoard = async (date) => {
       return;
     }
 
+    if (res.status === 504) {
+      const message = "AI 응답이 지연되고 있어요, 잠시 후 다시 시도해주세요.";
+
+      setInputError(message);
+
+      setLogs((prev) => 
+        prev.map((log) => 
+          log.id === gptMsgId ? {...log, log:message, pending:false} : log
+        )
+      );
+      return;
+    }
+
     if (!res.ok) throw new Error("서버 응답 오류");   
 
     const data = await res.json();

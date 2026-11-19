@@ -26,6 +26,7 @@ public class MealService {
     private final MealItemMapper mealItemMapper;
     private final MealLogMapper mealLogMapper;
     private final UserMapper userMapper;
+    private final AiRateLimitService aiRateLimitService;
 
     public List<MealItem> findItemsBySessionId(String userId, LocalDate date) {
         return mealItemMapper.findItemsByUser(userId, date);
@@ -46,6 +47,9 @@ public class MealService {
                     "식단 입력은 200자 이내로 입력해주세요."
             );
         }
+
+        // AI 호출 횟수 확인
+        aiRateLimitService.checkLimit(userId);
 
         //유저 요청 로그저장
         insertLog(new MealLogRequest(userId, msg, Role.USER));

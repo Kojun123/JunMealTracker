@@ -157,6 +157,19 @@ const loadDashBoard = async (date) => {
       body: JSON.stringify({ message: trimmed }),
     });
 
+    if (res.status === 429) {
+      const message = "요청이 너무 많아요, 잠시 후 다시 시도해주세요.";
+
+      setInputError(message);
+
+      setLogs((prev) => 
+        prev.map((log) =>
+          log.id === gptMsgId ? {...log, log:message, pending:false} : log
+        )
+      );
+      return;
+    }
+
     if (!res.ok) throw new Error("서버 응답 오류");   
 
     const data = await res.json();

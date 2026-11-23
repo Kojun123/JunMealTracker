@@ -127,8 +127,13 @@ export default function Composer({
         <div className="mb-3">
           <div className="mb-2 text-xs font-semibold text-slate-200">최근 먹은 것</div>
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {recentItems.map((x) => (
-              <Chip key={`recent-${x}`} label={x} tone="muted" onClick={() => addToken(x)} />
+            {recentItems.map((item) => (
+              <Chip
+               key={item.id}
+               label={item.name}
+               tone="muted"
+               onClick={() => addToken(item)}
+              />
             ))}
           </div>
         </div>

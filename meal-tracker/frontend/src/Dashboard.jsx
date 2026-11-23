@@ -66,10 +66,21 @@ const loadFavorites = async () => {
 const recentItems = (items ?? [])
   .slice()
   .sort((a, b) => new Date(b.createdAt ?? 0) - new Date(a.createdAt ?? 0))
-  .map((it) => it.name)
-  .filter(Boolean)
-  .filter((v, i, arr) => arr.indexOf(v) === i)
-  .slice(0, 8);
+  .filter((item) => item.name)
+  .filter((item, index, arr) =>
+    arr.findIndex((other) => other.name === item.name) === index
+  )
+  .slice(0, 8)
+  .map((item) => {
+    const count = Number(item.count) || 1;
+
+    return {
+      id: `recent-${item.id}`,
+      name: item.name,
+      calories: Number(item.calories) / count,
+      protein: Number(item.protein) / count,
+    };
+  });
 
 
 

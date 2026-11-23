@@ -13,6 +13,17 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setErr(null);
+
+    if (!email.trim()) {
+      setErr("이메일을 입력해주세요.");
+      return;
+    }
+
+    if (!password) {
+      setErr("비밀번호를 입력해주세요.");
+      return;
+    }
+
     setLoading(true);
 
     try {

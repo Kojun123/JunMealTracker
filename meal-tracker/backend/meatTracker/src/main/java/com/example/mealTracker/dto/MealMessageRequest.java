@@ -1,3 +1,6 @@
 package com.example.mealTracker.dto;
 
-public record MealMessageRequest(String message) {}
+import java.time.LocalDate;
+
+public record MealMessageRequest(String message, LocalDate date) {}
+

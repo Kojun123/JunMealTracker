@@ -7,7 +7,6 @@ import com.example.mealTracker.mapper.MealLogMapper;
 import com.example.mealTracker.mapper.UserMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +36,16 @@ public class MealService {
     public MealMessageResponse handle(MealMessageRequest vo, String userId) {
         String msg = vo.message() == null ? "" : vo.message().trim();
 
+
+        // 식단기록할 날짜(프론트에서 선택되어 넘어옴)
+        LocalDate mealDate = vo.date();
+
+        if (mealDate == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "식단 날짜값이 비어있습니다.");
+        }
+
         if (msg.isBlank()) {
-            return buildResponse("빈 입력값입니다.", userId);
+            return buildResponse("빈 입력값입니다.", userId, mealDate);
         }
 
         if (msg.length() > 200) {
@@ -58,7 +65,7 @@ public class MealService {
         JsonNode itemsNode = action.path("items");
 
         if (!itemsNode.isArray() || itemsNode.isEmpty()) {
-            return buildResponse("기록할 음식이 없음", userId);
+            return buildResponse("기록할 음식이 없음", userId, mealDate);
         }
 
         List<String> lines = new ArrayList<>();
@@ -72,7 +79,7 @@ public class MealService {
             int calories = it.path("calories").asInt(0) * count;
             int protein = it.path("protein").asInt(0) * count;
 
-            insertItem(rawName, count, calories, protein, userId);
+            insertItem(rawName, count, calories, protein, userId, mealDate);
 
             addPro += protein;
             addCal += calories;
@@ -87,12 +94,12 @@ public class MealService {
 
         //gpt응답 로그 저장
         insertLog(new MealLogRequest(userId, assistantText, Role.GPT));
-        return buildResponse(assistantText, userId);
+        return buildResponse(assistantText, userId, mealDate);
     }
 
     // 먹은 것 기록.
-    private void insertItem(String name, int addCount, double addCal, double addPro, String userId) {
-       MealItem item = new MealItem(name, addCount, addCal, addPro, userId, LocalDate.now(ZoneId.of("Asia/Seoul")));
+    private void insertItem(String name, int addCount, double addCal, double addPro, String userId, LocalDate mealDate) {
+       MealItem item = new MealItem(name, addCount, addCal, addPro, userId, mealDate);
        mealItemMapper.insertItem(item);
     }
 
@@ -101,16 +108,14 @@ public class MealService {
         mealLogMapper.insertMealLog(log);
     }
 
-    public MealMessageResponse buildResponse(String assistantText, String userId) {
-        LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
-
-        TodaySummary summary = calcSummary(userId, now);
+    public MealMessageResponse buildResponse(String assistantText, String userId, LocalDate mealDate) {
+        TodaySummary summary = calcSummary(userId, mealDate);
 
         return MealMessageResponse.normal(
                 assistantText + "\n" + remainText(summary),
                 summary,
-                List.copyOf(mealItemMapper.findItemsByUser(userId, now)),
-                List.copyOf(mealLogMapper.getChatLogs(userId, now))
+                List.copyOf(mealItemMapper.findItemsByUser(userId, mealDate)),
+                List.copyOf(mealLogMapper.getChatLogs(userId, mealDate))
         );
     }
 

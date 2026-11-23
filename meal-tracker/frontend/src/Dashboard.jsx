@@ -148,13 +148,16 @@ const loadDashBoard = async (date) => {
       {id: gptMsgId, role: "GPT", log: "", createdAt: now, pending: true},
       ...prev
     ])
-  //test22 squash
+  
     try {
     const res = await apiFetch("/api/meal/item", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: trimmed }),
+      body: JSON.stringify({
+         message: trimmed,
+         date: selectedDate
+         }),
     });
 
     if (res.status === 429) {
@@ -215,7 +218,7 @@ const loadDashBoard = async (date) => {
   
 
   };
-  // test
+  
  const send = (textArg) => {
   const text = (textArg ?? input).trim();
 

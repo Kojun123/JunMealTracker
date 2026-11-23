@@ -51,14 +51,6 @@ public class MealController {
         return ResponseEntity.ok(mealService.getToday(userId, date));
     }
 
-    @PostMapping("/setLogs")
-    public ResponseEntity<Void> setLogs(Authentication authentication, @RequestBody MealLogRequest vo) {
-        String userId = (String) authentication.getPrincipal();
-        vo.setEmail(userId);
-        mealService.insertLog(vo);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/favorite")
     public ResponseEntity<List<FavoriteMealResponse>> getFavoriteMeal (Authentication authentication) {
         String userId = (String) authentication.getPrincipal();

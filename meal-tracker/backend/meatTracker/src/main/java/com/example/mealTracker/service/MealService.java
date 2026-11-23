@@ -103,11 +103,6 @@ public class MealService {
         mealItemMapper.insertItem(item);
     }
 
-    public void insertLog(MealLogRequest vo) {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
-        insertLog(vo, today);
-    }
-
     public void insertLog(MealLogRequest vo, LocalDate mealDate) {
         MealLog log = new MealLog(
                 vo.getEmail(),

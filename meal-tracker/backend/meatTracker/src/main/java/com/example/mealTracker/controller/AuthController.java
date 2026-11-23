@@ -4,6 +4,7 @@ package com.example.mealTracker.controller;
 import com.example.mealTracker.common.JwtProvider;
 import com.example.mealTracker.dto.*;
 import com.example.mealTracker.mapper.UserMapper;
+import com.example.mealTracker.service.LoginAttemptService;
 import com.example.mealTracker.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,14 +30,21 @@ public class AuthController {
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final LoginAttemptService loginAttemptService;
 
 
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequest vo, HttpServletResponse response) {
+
+        loginAttemptService.checkLimit(vo.getEmail());
+
         try{
             Authentication auth = authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(vo.getEmail(), vo.getPassword())
             );
+
+            // 인증 성공 : 이전 실패 기록 삭제
+            loginAttemptService.reset(vo.getEmail());
 
             String email = auth.getName();
 
@@ -56,7 +63,10 @@ public class AuthController {
 
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok(Map.of("accessToken", access));
-        }catch (Exception e){
+        }
+        catch (AuthenticationException e){
+            // 인증실패시 호출되어서 실패횟수++
+            loginAttemptService.recordFailure(vo.getEmail());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }

@@ -23,7 +23,28 @@ export default function Login() {
         credentials: "include",
       });
 
+      // 로그인 오류 검증
+      if (res.status === 429) {
+        setErr("로그인 시도가 너무 많아요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      if (res.status === 401) {
+        setErr("이메일 또는 비밀번호를 확인해주세요.");
+        return;
+      }
+
+      if (!res.ok) {
+        setErr("로그인 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
       const data = await res.json();
+
+      if (!data.accessToken) {
+        setErr("로그인 응답을 확인할 수 없습니다.");
+        return;
+      }
       setAccessToken(data.accessToken);
       navigate("/");
     } catch (e2) {

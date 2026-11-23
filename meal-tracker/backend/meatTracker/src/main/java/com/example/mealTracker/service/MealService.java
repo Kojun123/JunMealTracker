@@ -59,7 +59,7 @@ public class MealService {
         aiRateLimitService.checkLimit(userId);
 
         //유저 요청 로그저장
-        insertLog(new MealLogRequest(userId, msg, Role.USER));
+        insertLog(new MealLogRequest(userId, msg, Role.USER), mealDate);
 
         JsonNode action = openAiService.parseMealAction(msg);
         JsonNode itemsNode = action.path("items");
@@ -93,18 +93,29 @@ public class MealService {
                         + " 총 칼로리 : " + addCal;
 
         //gpt응답 로그 저장
-        insertLog(new MealLogRequest(userId, assistantText, Role.GPT));
+        insertLog(new MealLogRequest(userId, assistantText, Role.GPT), mealDate);
         return buildResponse(assistantText, userId, mealDate);
     }
 
     // 먹은 것 기록.
     private void insertItem(String name, int addCount, double addCal, double addPro, String userId, LocalDate mealDate) {
-       MealItem item = new MealItem(name, addCount, addCal, addPro, userId, mealDate);
-       mealItemMapper.insertItem(item);
+        MealItem item = new MealItem(name, addCount, addCal, addPro, userId, mealDate);
+        mealItemMapper.insertItem(item);
     }
 
     public void insertLog(MealLogRequest vo) {
-        MealLog log = new MealLog(vo.getEmail(), vo.getLog(), vo.getRole());
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        insertLog(vo, today);
+    }
+
+    public void insertLog(MealLogRequest vo, LocalDate mealDate) {
+        MealLog log = new MealLog(
+                vo.getEmail(),
+                vo.getLog(),
+                vo.getRole(),
+                mealDate
+        );
+
         mealLogMapper.insertMealLog(log);
     }
 

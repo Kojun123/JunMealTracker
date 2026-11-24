@@ -82,6 +82,11 @@ export default function GoalSettingModal({
                 "placeholder:text-slate-400",
                 "shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
                 "focus:border-sky-300/60 focus:ring-4 focus:ring-sky-400/15",
+
+                // 숫자 화살표 숨기는 코드
+                "[appearance:textfield]",
+                "[&::-webkit-inner-spin-button]:appearance-none",
+                "[&::-webkit-outer-spin-button]:appearance-none",
               ].join(" ")}
             />
           </div>
@@ -105,6 +110,11 @@ export default function GoalSettingModal({
                 "placeholder:text-slate-400",
                 "shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
                 "focus:border-sky-300/60 focus:ring-4 focus:ring-sky-400/15",
+
+                // 숫자 화살표 숨기는 코드
+                "[appearance:textfield]",
+                "[&::-webkit-inner-spin-button]:appearance-none",
+                "[&::-webkit-outer-spin-button]:appearance-none",
               ].join(" ")}
             />
           </div>

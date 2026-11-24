@@ -22,15 +22,22 @@ async function refreshAccessToken() {
       credentials: "include",
     });
 
-    if (!res.ok) return null;
+    if (res.status === 401) return null;
+
+    if (!res.ok) {
+      throw new Error("인증 서버에 연결하지 못했습니다.");
+    }
 
     const data = await res.json();
     return data.accessToken || null;
   })();
 
-  const token = await refreshingPromise;
-  refreshingPromise = null;
-  return token;
+  try{
+    return await refreshingPromise
+  } finally{
+    refreshingPromise = null;
+  }
+
 }
 
 export async function restoreSession() {

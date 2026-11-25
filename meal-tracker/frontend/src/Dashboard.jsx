@@ -349,7 +349,7 @@ const loadDashBoard = async (date) => {
       method: "PUT",
       credentials: "include",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({id, name, count, calories, protein}),
+      body: JSON.stringify({name, count, calories, protein}),
     });
 
     if (!res.ok) {

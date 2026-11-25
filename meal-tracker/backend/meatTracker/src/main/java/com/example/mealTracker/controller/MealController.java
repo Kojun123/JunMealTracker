@@ -30,9 +30,10 @@ public class MealController {
     }
 
     @PutMapping("/item/{itemId}")
-    public ResponseEntity<Void> updateItem(Authentication authentication, @RequestBody UpdateItemRequest vo) {
+    public ResponseEntity<Void> updateItem(@PathVariable Long itemId,Authentication authentication,  @RequestBody UpdateItemRequest vo) {
         String userId = (String) authentication.getPrincipal();
         vo.setUserId(userId);
+        vo.setId(itemId);
         mealService. updateItem(vo);
         return ResponseEntity.ok().build();
     }

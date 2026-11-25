@@ -353,7 +353,7 @@ const loadDashBoard = async (date) => {
     });
 
     if (!res.ok) {
-      showToast("error", "기록 수정에 실패했습니다.");
+      showToast("error", "변경에 실패했습니다.");
       return;
     }
 
@@ -362,13 +362,33 @@ const loadDashBoard = async (date) => {
     if(data) handleServerResponse(data);
     else loadDashBoard(selectedDate);
 
-    showToast("success", "기록이 수정되었어요.");
+    showToast("success", "변경사항이 변경되었어요.");
     setEditOpen(false);
     setEditItem(null);
   }
 
   return (
   <div className="min-h-dvh bg-slate-950 text-slate-100">
+
+    {/* toast */}
+              {toast && (
+                <div
+                  className="fixed bottom-6 left-1/2 z-50 w-max max-w-[calc(100%-2rem)] -translate-x-1/2"
+                  role="status"
+                >
+                  <div
+                    className={[
+                      "rounded-2xl border px-4 py-3 text-sm font-semibold backdrop-blur",
+                      toast.type === "success"
+                        ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
+                        : "border-rose-400/20 bg-rose-500/10 text-rose-100",
+                    ].join(" ")}
+                  >
+                    {toast.message}
+                  </div>
+                </div>
+      )}
+
     {/* background */}
     <div className="pointer-events-none fixed inset-0 overflow-hidden">
       <div className="absolute -top-24 left-1/2 h-72 w-[520px] -translate-x-1/2 rounded-full bg-sky-300/20 blur-3xl" />
@@ -575,22 +595,7 @@ const loadDashBoard = async (date) => {
 
         <div className="border-t border-white/10" />
 
-        <div className="p-4 sm:p-5">
-          {/* toast */}
-          {toast && (
-            <div className="fixed right-4 top-4 z-50">
-              <div
-                className={[
-                  "rounded-2xl border px-4 py-3 text-sm font-semibold backdrop-blur",
-                  toast.type === "success"
-                    ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
-                    : "border-rose-400/20 bg-rose-500/10 text-rose-100",
-                ].join(" ")}
-              >
-                {toast.message}
-              </div>
-            </div>
-          )}
+        <div className="p-4 sm:p-5">          
 
           <Composer
               input={input}

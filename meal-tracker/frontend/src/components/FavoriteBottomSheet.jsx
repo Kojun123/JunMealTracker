@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { BottomSheet } from "./BottomSheet";
 import { apiFetch } from "../lib/apiFetch";
 
@@ -38,28 +38,63 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
   const [calories, setCalories] = useState("");
   const [protein, setProtein] = useState("");
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const savingRef = useRef(false);
+
+  useEffect(() => {
+    if (open) {
+      setError("");
+    }
+  }, [open]);
+
   const canAdd = useMemo(() => name.trim().length > 0, [name]);
 
   const addFavorite = async () => {
-    if (!canAdd) return;
+    if (!canAdd || savingRef.current) return;
 
-    const item = {
-      id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      name: name.trim(),
-      calories: calories.trim() ? toNumberOrNull(calories) : null,
-      protein: protein.trim() ? toNumberOrNull(protein) : null,
-    };
+    savingRef.current = true;
+    setSaving(true);
+    setError("");
 
-    await apiFetch("/api/meal/favorite", {
-      method: "POST",      
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(item),      
-    }).catch(console.error);    
-    await reloadFavorites();
+    try{
+      const item = {
+        id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        name: name.trim(),
+        calories: calories.trim() ? toNumberOrNull(calories) : null,
+        protein: protein.trim() ? toNumberOrNull(protein) : null,
+      };
 
-    setName("");
-    setCalories("");
-    setProtein("");
+      const res = await apiFetch("/api/meal/favorite", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(item),
+      });
+
+      if(!res.ok) {
+        setError("저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      //서버 저장이 성공한 경우 입력창 초기화
+      setName("");
+      setCalories("");
+      setProtein("");
+
+      // 즐겨찾기 리스트 조회
+      try {
+        await reloadFavorites();
+      } catch(error) {
+        // 즐겨찾기 리스트 조회 실패시
+        setError("저장은 성공했지만 목록을 불러오지 못했어요");
+      }
+    } catch(error) {
+      console.error(error);
+      setError("연결에 문제가 생겼습니다, 연결 상태를 확인해주세요.");      
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   const deleteFavorite = async (id) => {
@@ -79,6 +114,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
+          disabled={saving}
           placeholder="음식 이름  ex) xx 닭가슴살"
           className={[
             "h-11 w-full rounded-2xl px-4 text-sm outline-none",
@@ -93,6 +129,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
             value={calories}
             onChange={(e) => setCalories(e.target.value)}
             inputMode="numeric"
+            disabled={saving}
             placeholder="칼로리"
             className={[
               "h-11 w-full rounded-2xl px-4 text-sm outline-none",
@@ -105,6 +142,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
             value={protein}
             onChange={(e) => setProtein(e.target.value)}
             inputMode="numeric"
+            disabled={saving}
             placeholder="단백질"
             className={[
               "h-11 w-full rounded-2xl px-4 text-sm outline-none",
@@ -118,17 +156,23 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
         <button
           type="button"
           onClick={addFavorite}
-          disabled={!canAdd}
+          disabled={!canAdd || saving}
           className={[
             "h-11 w-full rounded-2xl text-sm font-semibold transition",
             "border border-white/10",
-            canAdd
+            canAdd && !saving
               ? "bg-white/5 text-slate-100 hover:bg-white/10"
               : "cursor-not-allowed bg-white/10 text-slate-500",
           ].join(" ")}
         >
-          추가
+          {saving ? "저장 중..." : "추가"}
         </button>
+
+          {error && (
+          <p className="mt-2 text-sm text-rose-400" role="alert">
+            {error}
+          </p>
+        )}
       </div>
       
       <div className="mt-4">

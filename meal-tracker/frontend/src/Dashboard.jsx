@@ -142,7 +142,7 @@ const loadDashBoard = async (date) => {
 
   const sendText = async (text) => {
     const trimmed = (text ?? "").trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || loading) return false;
 
    setLoading(true);
 
@@ -181,7 +181,7 @@ const loadDashBoard = async (date) => {
           log.id === gptMsgId ? {...log, log:message, pending:false} : log
         )
       );
-      return;
+      return false;
     }
 
     if (res.status === 504) {
@@ -194,7 +194,7 @@ const loadDashBoard = async (date) => {
           log.id === gptMsgId ? {...log, log:message, pending:false} : log
         )
       );
-      return;
+      return false;
     }
 
     if (!res.ok) throw new Error("서버 응답 오류");   
@@ -213,6 +213,7 @@ const loadDashBoard = async (date) => {
           : log
       )
     );
+    return true;
     } catch (e) {
       console.error(e);
       setLogs((prev) =>
@@ -223,6 +224,7 @@ const loadDashBoard = async (date) => {
       )
     );
       showToast("error", "메시지 전송에 실패했습니다.");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -230,7 +232,7 @@ const loadDashBoard = async (date) => {
 
   };
   
- const send = (textArg) => {
+ const send = async(textArg) => {
   const text = (textArg ?? input).trim();
 
   if (!text || loading) return false;
@@ -241,8 +243,7 @@ const loadDashBoard = async (date) => {
   }
 
   setInputError("");
-  sendText(text);
-  return true;
+  return await sendText(text);  
 };
 
   //아이템 삭제

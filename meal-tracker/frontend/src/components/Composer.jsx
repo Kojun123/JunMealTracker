@@ -55,6 +55,7 @@ export default function Composer({
   // 수량 토큰
   const [tokens, setTokens] = useState([]); // [{ name, qty }]
   const textRef = useRef(null);
+  const sendingRef = useRef(false);
 
   const addToken = (token) => {
     const n = (token.name ?? "").trim();
@@ -108,20 +109,29 @@ export default function Composer({
     return `${tokenText}, ${t}`;
   }, [tokens, input]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = combinedText.trim();
-    if (!text || loading) return;
 
-    const started = onSend(text);    
+    if (!text || loading || sendingRef.current) return;
+    sendingRef.current = true; // 전송 시작 : 잠금
+
+    try{
+      const started = await onSend(text);
+
+      if (started) {
+        setTokens([]);
+        setInput("");
+      }
+    } finally{
+      sendingRef.current = false; // 전송 종료 : 잠금 해제
+    }   
     
-    if (started) {
-      setTokens([]);
-      setInput("");
-    }
+    
   };
 
   return (
     <div className="border-t border-white/10 px-4 py-4 sm:px-5">
+       <fieldset disabled={loading} className="m-0 min-w-0 border-0 p-0">
       {/* 최근 먹은 것 */}
       {recentItems.length > 0 && (
         <div className="mb-3">
@@ -227,6 +237,8 @@ export default function Composer({
           {loading ? "전송 중..." : "전송"}
         </button>
       </div>
+
+      </fieldset>
     </div>
   );
 }

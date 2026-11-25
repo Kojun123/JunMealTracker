@@ -8,7 +8,7 @@ function toNumberOrNull(v) {
   return n;
 }
 
-function Row({ item, onDelete }) {
+function Row({ item, onDelete, disabled, deleting }) {
   return (
     <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
       <div className="min-w-0">
@@ -25,10 +25,12 @@ function Row({ item, onDelete }) {
       <button
         type="button"
         onClick={() => onDelete(item.id)}
-        className="shrink-0 rounded-xl px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-400/10"
+        disabled={disabled}
+        className="shrink-0 rounded-xl px-3 py-1.5 text-xs text-rose-200 hover:bg-rose-400/10 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        삭제
+        {deleting ? "삭제 중..." : "삭제"}
       </button>
+
     </div>
   );
 }
@@ -36,11 +38,13 @@ function Row({ item, onDelete }) {
 export default function FavoriteBottomSheet({ open, onClose, favorites, setFavorites, reloadFavorites }) {
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
+  const [protein, setProtein] = useState("");  
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const savingRef = useRef(false);
+
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     if (open) {
@@ -98,12 +102,34 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
   };
 
   const deleteFavorite = async (id) => {
-    await apiFetch(`/api/meal/favorite`, {
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-      method: "DELETE",                                                                                                                       
-    }).catch(console.error);
-    await reloadFavorites();
+    if (savingRef.current) return;
+
+    savingRef.current = true;
+    setDeletingId(id);
+    setError("");
+
+    try {
+      const res = await apiFetch("/api/meal/favorite", {
+        method: "DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id}),
+      })
+
+      if(!res.ok) {
+        setError("삭제에 실패했습니다, 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      // 서버 삭제 성공시 화면 목록에서도 제거
+      setFavorites((prev) => prev.filter((item) => item.id !== id));
+    } catch(error) {
+      console.error(error);
+      setError("연결 상태를 확인해주세요.")
+    } finally {
+      savingRef.current = false;
+      setDeletingId(null);
+    }
+    
   };
   
 
@@ -156,13 +182,13 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
         <button
           type="button"
           onClick={addFavorite}
-          disabled={!canAdd || saving}
+          disabled={!canAdd || saving || deletingId !== null}
           className={[
             "h-11 w-full rounded-2xl text-sm font-semibold transition",
             "border border-white/10",
-            canAdd && !saving
-              ? "bg-white/5 text-slate-100 hover:bg-white/10"
-              : "cursor-not-allowed bg-white/10 text-slate-500",
+            canAdd && !saving && deletingId === null
+            ? "bg-white/5 text-slate-100 hover:bg-white/10"
+            : "cursor-not-allowed bg-white/10 text-slate-500"
           ].join(" ")}
         >
           {saving ? "저장 중..." : "추가"}
@@ -185,7 +211,13 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
             </div>
           ) : (
             (favorites ?? []).map((x) => (
-              <Row key={x.id} item={x} onDelete={deleteFavorite} />
+               <Row
+                key={x.id}
+                item={x}
+                onDelete={deleteFavorite}
+                disabled={saving || deletingId !== null}
+                deleting={deletingId === x.id}
+              />
             ))
           )}
         </div>

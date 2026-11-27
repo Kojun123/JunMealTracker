@@ -126,7 +126,10 @@ useEffect(() => {
 }, [user]);
 
 useEffect(() => {
-  loadDashBoard(selectedDate);
+  loadDashBoard(selectedDate).catch((error) => {
+    console.error("식단 조회 실패:", error);
+    showToast("error", "식단 조회에 실패했어요, 잠시 후 다시 시도해주세요.");
+});
 }, [selectedDate]);
 
 //=======================useEffect=======================
@@ -138,7 +141,8 @@ const showToast = (type, message) => {
 
 const loadDashBoard = async (date) => {
   if (!date) date = dayjs().format("YYYY-MM-DD");
-    const res = await apiFetch(`/api/meal/today?date=${date}`, {
+
+  const res = await apiFetch(`/api/meal/today?date=${date}`, {
       credentials: "include",
       method: "POST",
       headers: { "Content-Type": "application/json" }
@@ -146,6 +150,11 @@ const loadDashBoard = async (date) => {
 
     if(res.status === 401) {
       navigate("/login");
+      return;
+    }
+
+    if (!res.ok) {
+      showToast("error", "식단 조회에 실패했어요, 새로고침 후 다시 시도해주세요.");
       return;
     }
 
@@ -237,7 +246,7 @@ const loadDashBoard = async (date) => {
           : log
       )
     );
-      showToast("error", "메시지 전송에 실패했습니다.");
+      showToast("error", "메시지 전송에 실패했어요.");
       return false;
     } finally {
       setLoading(false);
@@ -291,7 +300,7 @@ const loadDashBoard = async (date) => {
       });
     } catch (error) {
       console.error("삭제 요청 실패:", error);
-      showToast("error", "삭제 실패했습니다.");
+      showToast("error", "삭제에 실패했어요.");
       return;
     }
 
@@ -301,7 +310,7 @@ const loadDashBoard = async (date) => {
     }  
 
     if (!res.ok) {
-      showToast("error", "삭제에 실패했습니다.");
+      showToast("error", "삭제에 실패했어요.");
       return;
     }
 
@@ -311,7 +320,7 @@ const loadDashBoard = async (date) => {
       showToast("success", "삭제되었어요.");
     } catch (error) {
       console.error("삭제 후 대시보드 로드 실패:", error);
-      showToast("error", "삭제 후 데이터 로드에 실패했습니다.");
+      showToast("error", "삭제 후 데이터 로드에 실패했어요.");
     }
   } finally {
     setDeletingItemId(null);
@@ -340,7 +349,7 @@ const loadDashBoard = async (date) => {
   });
 
   if (!res.ok) {
-    showToast("error", "저장에 실패했습니다.");
+    showToast("error", "저장에 실패했어요.");
     return;
   }
 
@@ -366,8 +375,7 @@ const loadDashBoard = async (date) => {
 
   const submitEdit = async() => {
     if (!editItem) return;
-
-    const id = editItem.id;
+    
     const name = (editItem.name ?? "").trim();
     const count = Number(editItem.count);
     const calories = Number(editItem.calories);
@@ -398,18 +406,29 @@ const loadDashBoard = async (date) => {
     });
 
     if (!res.ok) {
-      showToast("error", "변경에 실패했습니다.");
+      showToast("error", "변경에 실패했어요.");
       return;
     }
 
     const data = await res.json().catch(() => null);
 
-    if(data) handleServerResponse(data);
-    else loadDashBoard(selectedDate);
-
-    showToast("success", "변경사항이 변경되었어요.");
+    // 수정 요청은 이미 성공했으므로 모달은 닫음
     setEditOpen(false);
     setEditItem(null);
+
+    try{
+       if(data) {
+        handleServerResponse(data);
+      } else {
+        await loadDashBoard(selectedDate);
+      }      
+
+      showToast("success", "변경사항이 반영되었어요.");
+    } catch (error) {
+      console.error("수정 후 대시보드 로드 실패:", error);
+      showToast("error", "변경 후 데이터 로드에 실패했어요.");
+    }
+    
   }
 
   return (

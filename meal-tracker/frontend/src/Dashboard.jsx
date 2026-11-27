@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs"; //날짜 포맷
 import EditItemModal from "./components/EditItemModal";
@@ -25,6 +25,8 @@ const [items, setItems] = useState([]);
 const [input, setInput] = useState("");
 const [logs, setLogs] = useState([]);
 const [loading, setLoading] = useState(false);
+const [deletingItemId, setDeletingItemId] = useState(null);
+const deletingItemRef  = useRef(null);
 
 //editModal
 const [editOpen, setEditOpen] = useState(false);
@@ -260,31 +262,61 @@ const loadDashBoard = async (date) => {
 
   //아이템 삭제
   const onDelete = async (item) => {
+    if (deletingItemRef.current) return; // 이미 삭제 중이면 무시
 
-    const result = await Swal.fire({
-      title: '정말로 삭제하시겠어요?',
-      text: "이 작업은 되돌릴 수 없어요.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: 'rgb(250, 102, 102)',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: '삭제',
-      cancelButtonText: '취소'
-    })
+    deletingItemRef.current = true;
+
+    try{
+      const result = await Swal.fire({
+        title: '정말로 삭제하시겠어요?',
+        text: "이 작업은 되돌릴 수 없어요.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: 'rgb(250, 102, 102)',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '삭제',
+        cancelButtonText: '취소'
+    });
   
 
     if(!result.isConfirmed) return;
+    setDeletingItemId(item.id);
+
+    let res;
     
-    const res = await apiFetch(`/api/meal/item/${item.id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+    try{
+      res = await apiFetch(`/api/meal/item/${item.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("삭제 요청 실패:", error);
+      showToast("error", "삭제 실패했습니다.");
+      return;
+    }
 
-    if (!res.ok) return;
+    if (res.status === 401) {
+      navigate("/login");
+      return;
+    }  
 
-    const data = await res.json().catch(() => null);
-    if (data) handleServerResponse(data);
-    else loadDashBoard(selectedDate); 
+    if (!res.ok) {
+      showToast("error", "삭제에 실패했습니다.");
+      return;
+    }
+
+    // 삭제 성공 시
+    try {
+      await loadDashBoard(selectedDate);
+      showToast("success", "삭제되었어요.");
+    } catch (error) {
+      console.error("삭제 후 대시보드 로드 실패:", error);
+      showToast("error", "삭제 후 데이터 로드에 실패했습니다.");
+    }
+  } finally {
+    setDeletingItemId(null);
+    deletingItemRef.current = false;
+    }
   };
 
   const saveGoal = async() => {
@@ -516,10 +548,11 @@ const loadDashBoard = async (date) => {
 
                         <button
                           onClick={() => onDelete(it)}
-                          className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15"
+                          disabled={deletingItemId !== null}
+                          className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-50"
                           title="삭제"
                         >
-                          🗑️
+                          {deletingItemId === it.id ? "삭제 중..." : "🗑️"}
                         </button>
                       </div>
                     </div>
@@ -591,10 +624,11 @@ const loadDashBoard = async (date) => {
 
                           <button
                             onClick={() => onDelete(it)}
-                            className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15"
+                            disabled={deletingItemId !== null}
+                            className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-2 py-1 text-xs font-semibold text-rose-100 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-50"
                             title="삭제"
                           >
-                            🗑️
+                            {deletingItemId === it.id ? "삭제 중..." : "🗑️"}
                           </button>
                         </div>
                       </td>

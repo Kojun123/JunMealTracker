@@ -53,13 +53,21 @@ const loadFavorites = async () => {
 
   if (res.status === 401){
     navigate("/login");
-    return;
+    throw new Error("Unauthorized");    
   }
 
-  if (!res.ok) return ;
+  if (!res.ok) {
+    throw new Error("즐겨찾기 목록 조회 실패");
+  }
 
-  const data = await res.json().catch(() => []);
-  setFavorites(Array.isArray(data)? data : (data.items ?? []));
+  const data = await res.json();
+  const list = Array.isArray(data) ? data : data?.items;
+
+  if (!Array.isArray(list)) {
+    throw new Error("즐겨찾기 목록 형식 오류");
+  }
+
+  setFavorites(list);
 
 };
 
@@ -108,7 +116,11 @@ useEffect(() => {
   if (!user) return;
   setTargetCalories(user.targetCalories ?? 2000);
   setTargetProtein(user.targetProtein ?? 150);
-  loadFavorites();
+
+  loadFavorites().catch((error) => {
+    console.error("즐겨찾기 목록 조회 실패:", error);
+    showToast("error", "즐겨찾기 목록 조회에 실패했어요, 새로고침 후 다시 시도해주세요.");
+  });
 }, [user]);
 
 useEffect(() => {

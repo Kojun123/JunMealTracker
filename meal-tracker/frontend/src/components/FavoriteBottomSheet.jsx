@@ -42,6 +42,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const savingRef = useRef(false);
 
   const [deletingId, setDeletingId] = useState(null);
@@ -49,6 +50,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
   useEffect(() => {
     if (open) {
       setError("");
+      setSuccessMessage("");
     }
   }, [open]);
 
@@ -60,6 +62,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
     savingRef.current = true;
     setSaving(true);
     setError("");
+    setSuccessMessage("");
 
     try{
       const item = {
@@ -85,6 +88,8 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
       setCalories("");
       setProtein("");
 
+      setSuccessMessage("즐겨찾기에 추가되었어요.");
+
       // 즐겨찾기 리스트 조회
       try {
         await reloadFavorites();
@@ -107,6 +112,7 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
     savingRef.current = true;
     setDeletingId(id);
     setError("");
+    setSuccessMessage("");
 
     try {
       const res = await apiFetch("/api/meal/favorite", {
@@ -122,6 +128,8 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
 
       // 서버 삭제 성공시 화면 목록에서도 제거
       setFavorites((prev) => prev.filter((item) => item.id !== id));
+      setSuccessMessage("즐겨찾기에서 삭제되었어요.");
+
     } catch(error) {
       console.error(error);
       setError("연결 상태를 확인해주세요.")
@@ -197,6 +205,12 @@ export default function FavoriteBottomSheet({ open, onClose, favorites, setFavor
           {error && (
           <p className="mt-2 text-sm text-rose-400" role="alert">
             {error}
+          </p>
+        )}
+
+        {successMessage && !error && (
+          <p className="mt-2 text-sm text-emerald-400" role="status">
+            {successMessage}
           </p>
         )}
       </div>

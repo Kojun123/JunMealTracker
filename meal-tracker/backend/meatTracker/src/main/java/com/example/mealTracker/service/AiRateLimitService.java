@@ -11,7 +11,7 @@ import java.util.Map;
 public class AiRateLimitService {
 
     // 사용자당 허용 횟수
-    private static final int MAX_REQUESTS = 3;
+    private static final int MAX_REQUESTS = 5;
 
     // 제한 시간(1분)
     private static final long WINDOW_MILLIS = 60_000L;
